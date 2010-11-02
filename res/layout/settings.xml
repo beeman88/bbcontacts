@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+     android:orientation="vertical" >
+	<EditText
+		android:id="@+id/username"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="BB Username"
+		android:textSize="18sp"
+	>
+	</EditText>
+	<EditText
+		android:id="@+id/password"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="Password"
+		android:textSize="18sp"
+	>
+	</EditText>
+	<Button
+		android:id="@+id/save"
+		android:layout_width="101px"
+		android:layout_height="wrap_content"
+		android:text="Save"
+	>
+	</Button>
+</LinearLayout>
