@@ -99,6 +99,9 @@ public class ContactActivity extends ListActivity {
 		case R.id.customers:
 			startActivity(new Intent(this, CustomerActivity.class));
         	return true;
+		case R.id.settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+        	return true;
 		}
 		
 		return super.onOptionsItemSelected(item);

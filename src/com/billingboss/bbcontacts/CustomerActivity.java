@@ -10,6 +10,7 @@ import org.xmlpull.v1.XmlSerializer;
 import com.billingboss.bbcontacts.R;
 
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -33,12 +34,15 @@ public class CustomerActivity extends ListActivity {
 	private static final String TAG = "CustomerActivity";
 
 	private List<Customer> customers;	
-	private ArrayList<CustomerRow> customerList;	
+	private ArrayList<CustomerRow> customerList;
+	private Context ctx;	
 	
 	public void onCreate(Bundle savedInstanceState) { 
         super.onCreate(savedInstanceState);	
 
-		setContentView(R.layout.customer_list);        
+		setContentView(R.layout.customer_list); 
+		ctx = getApplicationContext();
+		
 		mDbHelper = new BBContactsDBAdapter(this);
         mDbHelper.open();
         fillData();        
@@ -64,6 +68,9 @@ public class CustomerActivity extends ListActivity {
 		case R.id.contacts:
 			startActivity(new Intent(this, ContactActivity.class));
         	return true;
+		case R.id.settings:
+			startActivity(new Intent(this, SettingsActivity.class));
+        	return true;
 		}
 		
 		return super.onOptionsItemSelected(item);
@@ -72,23 +79,8 @@ public class CustomerActivity extends ListActivity {
 	private void getCustomers() {
 		RestClient client = new RestClient(CUSTOMER_URL);
     	client.AddParam("select", "name");
-    	//client.AddHeader("Authorization", "Basic YmVlbWFuOnRlc3Q=");
-
-    	// read settings to get user name and password
-    	String username = "";
-    	String password = "";
-    	Cursor c = mDbHelper.fetchSetting(1);
-    	if (c.getCount() > 0) {
-			username = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME));            	
-			password = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD));
-    	}
-    	else {
-    		Log.d(TAG, "settings username and password are not created");
-    	}
-    	
-    	// Add basic authorization to header
-    	String auth = "Basic " + Base64.encodeBytes((username + ":" + password).getBytes());
-    	client.AddHeader("Authorization", auth);
+    	//client.AddHeader("Authorization", "Basic YmVlbWFuOnRlc3Q=");    	
+    	client.AddHeader("Authorization", getBasicAuth());
     	
     	try {
     	    client.Execute(RequestMethod.GET);
@@ -98,7 +90,8 @@ public class CustomerActivity extends ListActivity {
 
     	String response = client.getResponse();
     	if (response == null || response.trim().equals("")) {
-        	Log.i(TAG, "response is null");
+    		ErrorHandler.LogToastError(ctx, TAG, 
+    			getString(R.string.customer_err_null_response));
     		return;
     	}
 
@@ -106,34 +99,44 @@ public class CustomerActivity extends ListActivity {
 
     	this.loadFeed(response, ParserType.DOM);
 	}
+
+	private String getBasicAuth() {
+		// read settings to get user name and password
+    	Cursor c = mDbHelper.fetchSetting(1);
+    	
+		if (c == null) {
+			ErrorHandler.LogToastError(ctx, TAG,
+					getString(R.string.settings_err_not_created));
+			return "";
+		}    	
+    	
+		String username = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME));            	
+		String password = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD));
+    	
+    	// Add basic authorization to header
+    	return "Basic " + Base64.encodeBytes((username + ":" + password).getBytes());
+	}
 	
 	private void loadFeed(String feed, ParserType type){
 		try{
-			Log.i(TAG, "ParserType="+type.name());
 			FeedParser parser = FeedParserFactory.getParser(type);
-			long start = System.currentTimeMillis();
 			parser.setFeed(feed);
 			customers = parser.parse();
-			long duration = System.currentTimeMillis() - start;
-			Log.i(TAG, "Parser duration=" + duration);
-			
-			//String xml = writeXml();
-			//Log.i(TAG, xml);
-			
+		
 			customerList = new ArrayList<CustomerRow>(customers.size());
 			
 			for (Customer cust : customers){
 				customerList.add(new CustomerRow(cust.getName(), cust.getBBId()));
 			}
 			
-			createList();
+			setScreenList();
 			
 		} catch (Throwable t){
 			Log.e(TAG,t.getMessage(),t);
 		}
 	}
 
-	private void createList() {
+	private void setScreenList() {
 		ListAdapter adapter = new CustomerRowAdapter(this, 
 				(List<? extends Map<String, String>>) customerList,
 				R.layout.customers_row, 
@@ -150,7 +153,7 @@ public class CustomerActivity extends ListActivity {
 		public void onItemClick(AdapterView<?> parent, View view,
 		    int position, long id) {
 		  // When clicked, show a toast with the TextView text
-		  Toast.makeText(getApplicationContext(), customerList.get(position).bb_id,		    		  
+		  Toast.makeText(ctx, customerList.get(position).bb_id,		    		  
 		      Toast.LENGTH_SHORT).show();
 		}
 		});
@@ -186,7 +189,8 @@ public class CustomerActivity extends ListActivity {
 		mDbHelper.deleteCustomers();
 		for (Customer cust : customers){
 			if (mDbHelper.createCustomer(cust.getName(), cust.getBBId()) < 0) {
-				Log.e(TAG, cust.getName() + " could not be created");
+	    		ErrorHandler.LogToastError(ctx, TAG, 
+       				 String.format(getString(R.string.customer_err_not_saved), cust.getName()));	    				
 			};
 		}		
 		return;
@@ -195,25 +199,24 @@ public class CustomerActivity extends ListActivity {
 	private void fillData() {
 		// Get all of the Customers from the database and create the item list
 		Cursor c = mDbHelper.fetchAllCustomers();
+		
+		if (c == null) {
+			ErrorHandler.LogToastError(ctx, TAG,
+					getString(R.string.customers_err_not_created));
+			return;
+		}
+		
 		startManagingCursor(c);
-
-/*		// Now create an array adapter and set it to display using our row
-		SimpleCursorAdapter Customers =
-			new SimpleCursorAdapter(this, R.layout.customers_row, c, from, to);
-		setListAdapter(Customers);
-*/		
 		customerList = new ArrayList<CustomerRow>();
 		
-		if (c.moveToFirst()) {
-			do {
-				String name = c.getString(c.getColumnIndex(BBContactsDBAdapter.CUSTOMER_NAME));            	
-				String bb_id = c.getString(c.getColumnIndex(BBContactsDBAdapter.CUSTOMER_BB_ID));
-				customerList.add(new CustomerRow(name, bb_id));
-			} while (c.moveToNext());
-		}
+		do {
+			String name = c.getString(c.getColumnIndex(BBContactsDBAdapter.CUSTOMER_NAME));            	
+			String bb_id = c.getString(c.getColumnIndex(BBContactsDBAdapter.CUSTOMER_BB_ID));
+			customerList.add(new CustomerRow(name, bb_id));
+		} while (c.moveToNext());
 		c.close();
 		
-		createList();        
+		setScreenList();        
 		
 	}	
 	

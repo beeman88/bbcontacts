@@ -15,11 +15,9 @@
 	<string name="menu_settings">Settings</string>	
 	<string name="settings_bb_username">BillingBoss Username</string>
 	<string name="settings_bb_password">BillingBoss Password</string>	
-	<string name="settings_err_not_saved">%s not saved in settings</string>
+	<string name="settings_err_not_saved"> not saved in settings</string>
 	<string name="settings_err_not_created">username and password are not created in settings</string>
-	<string name="settings_saved">%s saved in settings</string>
+	<string name="settings_saved"> saved in settings</string>
 	<string name="customer_err_null_response">no response received from billingboss</string>
-	<string name="customer_err_not_saved">%s was not saved in customers</string>	
-	<string name="customers_err_not_created">no customers are created</string>	
-	<string name="save">save</string>
+	<string name="customer_err_not_saved"> was not saved in customers</string>	
 </resources>

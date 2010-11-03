@@ -7,7 +7,6 @@
 		android:id="@+id/username"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:text="BB Username"
 		android:textSize="18sp"
 	>
 	</EditText>
@@ -15,15 +14,15 @@
 		android:id="@+id/password"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:text="Password"
 		android:textSize="18sp"
+		android:password="true"
 	>
 	</EditText>
 	<Button
 		android:id="@+id/save"
 		android:layout_width="101px"
 		android:layout_height="wrap_content"
-		android:text="Save"
+		android:text="@string/save"
 	>
 	</Button>
 </LinearLayout>

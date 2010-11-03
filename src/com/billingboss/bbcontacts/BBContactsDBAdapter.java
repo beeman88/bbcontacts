@@ -56,7 +56,6 @@ public class BBContactsDBAdapter {
     
     private static final String TABLE_SETTINGS = "settings";
     public static final String SETTINGS_ROWID = "_id";
-    public static final String SETTINGS_LANGUAGE = "language";
     public static final String SETTINGS_USERNAME = "username";
     public static final String SETTINGS_PASSWORD = "password";    
     public static final String SETTINGS_UPDATED_AT = "updated_at";    
@@ -85,7 +84,6 @@ public class BBContactsDBAdapter {
         		"updated_at bigint);";
     private static final String DATABASE_CREATE_SETTINGS =
         "create table settings (_id integer primary key autoincrement, " +
-                "language text, " +
                 "username text, " +
                 "password text, " +                
         		"updated_at bigint);";    
@@ -202,21 +200,19 @@ public class BBContactsDBAdapter {
     }
     
     /**
-     * Create a new setting using the language, username, password. If the contact is
+     * Create a new setting using the username, password. If the contact is
      * successfully created return the new rowId for that contact, otherwise return
      * a -1 to indicate failure.
      * 
-     * @param language for the settings
      * @param username for the settings billing boss username
      * @param password for the settings billing boss password
      * @param updated_at the last updated timestamp of the contact
      * @return rowId or -1 if failed
      * @throws IOException 
      */
-    public long createSetting(String language, String username, String password){
+    public long createSetting(String username, String password){
     	
         ContentValues initialValues = new ContentValues();
-        initialValues.put(SETTINGS_LANGUAGE, language);
         initialValues.put(SETTINGS_USERNAME, username);        
         initialValues.put(SETTINGS_PASSWORD, password);
         initialValues.put(SETTINGS_UPDATED_AT, getCurrentTime());
@@ -264,8 +260,17 @@ public class BBContactsDBAdapter {
      */
     public Cursor fetchAllCustomers() {
 
-        return mDb.query(TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID, CUSTOMER_NAME, CUSTOMER_BB_ID,
+    	Cursor mCursor =
+    		mDb.query(TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID, CUSTOMER_NAME, CUSTOMER_BB_ID,
                 CUSTOMER_UPDATED_AT}, null, null, null, null, null);
+    	
+        // if cursor null or has 0 rows
+        if (mCursor == null || mCursor.getCount() == 0) {
+        	return null;
+        }
+        
+        mCursor.moveToFirst();        
+        return mCursor;
     }
 
     /**
@@ -330,14 +335,15 @@ public class BBContactsDBAdapter {
 
         Cursor mCursor =
             mDb.query(true, TABLE_SETTINGS, new String[] {SETTINGS_ROWID,
-                    SETTINGS_LANGUAGE, SETTINGS_USERNAME, SETTINGS_PASSWORD, SETTINGS_UPDATED_AT}, SETTINGS_ROWID + "=" + rowId, null,
+                    SETTINGS_USERNAME, SETTINGS_PASSWORD, SETTINGS_UPDATED_AT}, SETTINGS_ROWID + "=" + rowId, null,
                     null, null, null, null);
-        // if cursor not null or does not have 0 rows
-        if (!(mCursor == null || mCursor.getCount() == 0)) {
-            mCursor.moveToFirst();
+        // if cursor null or has 0 rows
+        if (mCursor == null || mCursor.getCount() == 0) {
+        	return null;
         }
+        
+        mCursor.moveToFirst();        
         return mCursor;
-
     }
 
     /**
@@ -390,15 +396,13 @@ public class BBContactsDBAdapter {
      * values passed in
      * 
      * @param rowId id of setting to update (1)
-     * @param language value to set setting's language 
      * @param username to set setting's username
      * @param password to set setting's password
      * @return true if the setting was successfully updated, false otherwise
      */
     public boolean updateSetting(
-    		long rowId, String language, String username, String password ) {
+    		long rowId, String username, String password ) {
         ContentValues args = new ContentValues();
-        args.put(SETTINGS_LANGUAGE, language);        
         args.put(SETTINGS_USERNAME, username);
         args.put(SETTINGS_PASSWORD, password);
         args.put(SETTINGS_UPDATED_AT, getCurrentTime());
