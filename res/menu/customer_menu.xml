@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/get_customers"
-          android:title="@string/menu_get_customers" />
-    <item android:id="@+id/set_customers"
-          android:title="@string/menu_set_customers" />
-    <item android:id="@+id/contacts"
-          android:title="@string/menu_contacts" />
     <item android:id="@+id/settings"
           android:title="@string/menu_settings" />          
 </menu>

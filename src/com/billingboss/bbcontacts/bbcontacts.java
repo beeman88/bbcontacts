@@ -50,9 +50,6 @@ public class bbcontacts extends ListActivity {
 		case R.id.customers:
 			startActivity(new Intent(this, CustomerActivity.class));
         	return true;
-		case R.id.contacts:
-			startActivity(new Intent(this, ContactActivity.class));
-        	return true;
 		case R.id.settings:
 			startActivity(new Intent(this, SettingsActivity.class));			
         	return true;        	

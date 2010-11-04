@@ -1,14 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-    
-<ListView android:id="@android:id/list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-<TextView android:id="@android:id/empty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_customers"/>    
-
-</LinearLayout>
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+	<ListView android:id="@android:id/list"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentTop="true"/>
+	<TextView android:id="@android:id/empty"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="@string/no_customers"
+	        android:layout_alignParentTop="true"/>
+	<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical"
+	    android:layout_alignParentBottom="true"
+	    >
+		<Button android:id="@+id/button_get_cust"
+	        android:text="@string/get_customers"
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        />
+		<Button android:id="@+id/button_set_cust"
+	        android:text="@string/set_customers"
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_toRightOf="@id/button_get_cust"
+	        />
+	</RelativeLayout>                 
+</RelativeLayout>

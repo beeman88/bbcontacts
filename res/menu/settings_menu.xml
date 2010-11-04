@@ -2,6 +2,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/customers"
           android:title="@string/menu_customers" />
-    <item android:id="@+id/contacts"
-          android:title="@string/menu_contacts" />
 </menu>

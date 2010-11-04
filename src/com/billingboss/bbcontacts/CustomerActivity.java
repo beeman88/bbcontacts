@@ -4,15 +4,15 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.xmlpull.v1.XmlSerializer;
-
-import com.billingboss.bbcontacts.R;
-
+import android.app.Activity;
 import android.app.ListActivity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Xml;
@@ -20,11 +20,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+
 
 public class CustomerActivity extends ListActivity {
 	
@@ -35,17 +41,40 @@ public class CustomerActivity extends ListActivity {
 
 	private List<Customer> customers;	
 	private ArrayList<CustomerRow> customerList;
-	private Context ctx;	
+	private Context ctx;
+	private String company;
 	
-	public void onCreate(Bundle savedInstanceState) { 
-        super.onCreate(savedInstanceState);	
-
+	private static final int CONTACT_PICKER_RESULT = 1001;	
+	
+	public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // Request for the progress bar to be shown in the title
+        //requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        
 		setContentView(R.layout.customer_list); 
+		
+		Button btnGetCust = (Button) findViewById(R.id.button_get_cust);
+		btnGetCust.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                //setProgressBarIndeterminateVisibility(true);
+                getCustomers();
+                //setProgressBarIndeterminateVisibility(false);                
+            }
+        });
+		
+		Button btnSetCust = (Button) findViewById(R.id.button_set_cust);
+		btnSetCust.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                setCustomers();
+            }
+        });		
+		
 		ctx = getApplicationContext();
 		
 		mDbHelper = new BBContactsDBAdapter(this);
         mDbHelper.open();
-        fillData();        
+        fillData();
 	}
 
 	@Override
@@ -59,15 +88,6 @@ public class CustomerActivity extends ListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.get_customers:
-			getCustomers();
-        	return true;
-		case R.id.set_customers:
-			setCustomers();
-        	return true;
-		case R.id.contacts:
-			startActivity(new Intent(this, ContactActivity.class));
-        	return true;
 		case R.id.settings:
 			startActivity(new Intent(this, SettingsActivity.class));
         	return true;
@@ -77,6 +97,7 @@ public class CustomerActivity extends ListActivity {
 	}
 	
 	private void getCustomers() {
+		setProgressBarIndeterminateVisibility(true);
 		RestClient client = new RestClient(CUSTOMER_URL);
     	client.AddParam("select", "name");
     	//client.AddHeader("Authorization", "Basic YmVlbWFuOnRlc3Q=");    	
@@ -98,6 +119,7 @@ public class CustomerActivity extends ListActivity {
     	Log.d(TAG, response);
 
     	this.loadFeed(response, ParserType.DOM);
+		setProgressBarIndeterminateVisibility(false);    	
 	}
 
 	private String getBasicAuth() {
@@ -151,13 +173,77 @@ public class CustomerActivity extends ListActivity {
 		
 		lv.setOnItemClickListener(new OnItemClickListener() {
 		public void onItemClick(AdapterView<?> parent, View view,
-		    int position, long id) {
-		  // When clicked, show a toast with the TextView text
-		  Toast.makeText(ctx, customerList.get(position).bb_id,		    		  
-		      Toast.LENGTH_SHORT).show();
+				int position, long id) {
+			
+        		company = customerList.get(position).name;
+			
+			    Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+			            Contacts.CONTENT_URI);
+			    startActivityForResult(contactPickerIntent, CONTACT_PICKER_RESULT);
 		}
 		});
 	}
+	
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+            case CONTACT_PICKER_RESULT:
+                // handle contact results
+            	Uri result = data.getData();
+            	// get the contact id from the Uri
+            	String id = result.getLastPathSegment();
+            	
+            	Toast.makeText(ctx, id,		    		  
+          		      Toast.LENGTH_SHORT).show();
+            	
+        		ContentResolver cr = getContentResolver();            	
+                String orgWhere = ContactsContract.Data.CONTACT_ID + " = ? AND " + 
+                				  ContactsContract.Data.MIMETYPE + " = ? AND " + 
+                				  ContactsContract.CommonDataKinds.Organization.TYPE + " = ? AND " + 
+                				  ContactsContract.CommonDataKinds.Organization.LABEL + " = ?"; 
+             	String[] orgWhereParams = new String[]{id, 
+             		ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE,
+             		Integer.toString(ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM),
+             		"BillingBoss"
+             		}; 
+             	Cursor orgCur = cr.query(ContactsContract.Data.CONTENT_URI, 
+                            null, orgWhere, orgWhereParams, null);
+
+                Uri mOrgs = ContactsContract.Data.CONTENT_URI;
+                ContentValues args = new ContentValues();
+                args.put(ContactsContract.CommonDataKinds.Organization.COMPANY, company);        
+                args.put(ContactsContract.CommonDataKinds.Organization.RAW_CONTACT_ID, id);
+                args.put(ContactsContract.CommonDataKinds.Organization.TYPE, ContactsContract.CommonDataKinds.Organization.TYPE_CUSTOM);
+                args.put(ContactsContract.CommonDataKinds.Organization.LABEL, "BillingBoss");
+                args.put(ContactsContract.CommonDataKinds.Organization.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);                
+                
+             	// organization not found, insert 
+             	if (orgCur == null || orgCur.getCount() == 0) {
+             		try {
+             			cr.insert(mOrgs, args);
+             		}
+             		catch (Exception e) {
+             			ErrorHandler.LogToastError(ctx, TAG, e.getLocalizedMessage());
+             		}
+             	}
+             	else	
+             	{
+	        		try {
+	        			cr.update(mOrgs, args, orgWhere, orgWhereParams);
+	        		}
+	        		catch (Exception e) {
+	        			ErrorHandler.LogToastError(ctx, TAG, e.getLocalizedMessage());
+	        		}
+             	}
+                break;
+            }
+
+        } else {
+            // gracefully handle failure
+            Log.w(TAG, "Warning: activity result not ok");
+        }
+    }
+	
 	
 	private String writeXml(){
 		XmlSerializer serializer = Xml.newSerializer();
