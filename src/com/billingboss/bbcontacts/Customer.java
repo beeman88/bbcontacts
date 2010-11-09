@@ -1,7 +1,6 @@
 package com.billingboss.bbcontacts;
 
 import com.billingboss.bbcontacts.R;
-import com.billingboss.bbcontacts.R.id;
 
 public class Customer implements Comparable<Customer>{
 	private String name;

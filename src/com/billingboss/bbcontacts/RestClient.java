@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -20,7 +21,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
 
-public class RestClient {
+import android.util.Log;
+
+public class RestClient implements Iterator {
+	
+	private static final String TAG = "RestClient";	
 
     private ArrayList <NameValuePair> params;
     private ArrayList <NameValuePair> headers;
@@ -31,6 +36,10 @@ public class RestClient {
     private String message;
 
     private String response;
+    
+    private int totalResults;
+    private int itemsPerPage;
+    private int startIndex;
 
     public String getResponse() {
         return response;
@@ -43,7 +52,28 @@ public class RestClient {
     public int getResponseCode() {
         return responseCode;
     }
+    
+    public int getHeaderSize() {
+    	return headers.size();
+    }
+    
+    public void setTotalResults(int totalResults) {
+    	this.totalResults = totalResults;
+    }
+    
+    public void setItemsPerPage(int itemsPerPage) {
+    	this.itemsPerPage = itemsPerPage;
+    }
+    
+    public int getItemsPerPage() {
+    	return this.itemsPerPage;
+    }
+    
+    public void setStartIndex(int startIndex) {
+    	this.startIndex = startIndex;
+    }
 
+    // constructor
     public RestClient(String url)
     {
         this.url = url;
@@ -60,6 +90,11 @@ public class RestClient {
     {
         headers.add(new BasicNameValuePair(name, value));
     }
+    
+ /*   public void UpdateHeader(BasicNameValuePair nvp, String name, String value) {
+    	int index = headers.lastIndexOf(nvp);
+    	headers.set(index, new BasicNameValuePair(name, value));
+    }*/
 
     public void Execute(RequestMethod method) throws Exception
     {
@@ -167,4 +202,40 @@ public class RestClient {
         }
         return sb.toString();
     }
+
+	@Override
+	public boolean hasNext() {
+		
+		// more records to retrieve
+		if (startIndex + itemsPerPage <= totalResults) {
+			return true;
+		}
+		
+		// finished
+		return false;
+	}
+
+	@Override
+	public String next() {
+    	// request customers from billingboss
+    	try {
+    	    this.Execute(RequestMethod.GET);
+    	} catch (Exception e) {
+    		Log.e(TAG, e.getLocalizedMessage());
+    		return "";
+    	}
+
+    	// response is an sdata xml feed
+    	String response = this.getResponse();
+    	if (response == null || response.trim().equals("")) {
+    		return "";
+    	}
+		return response;
+	}
+
+	@Override
+	public void remove() {
+		// TODO Auto-generated method stub
+		
+	}
 }

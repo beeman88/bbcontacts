@@ -22,6 +22,8 @@
 	<string name="settings_saved">%s saved in settings</string>
 	<string name="customer_err_null_response">no response received from billingboss</string>
 	<string name="customer_err_not_saved">%s was not saved in customers</string>	
-	<string name="customers_err_not_created">no customers are created</string>	
+	<string name="customers_err_not_created">no customers are created</string>
+	<string name="customers_warn_activity_result">Warning: activity result not ok</string>
+	<string name="BillingBoss">BillingBoss</string>	
 	<string name="save">Save</string>
 </resources>

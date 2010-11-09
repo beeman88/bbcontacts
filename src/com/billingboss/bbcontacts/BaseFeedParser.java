@@ -18,11 +18,14 @@ public abstract class BaseFeedParser implements FeedParser {
 	static final  String PAYLOAD = "sdata:payload";
 	static final String TRADING_ACCOUNT = "crmErp:tradingAccount";
 	static final String NAME = "crmErp:name";
-	static final  String START_INDEX = "opensearch:startIndex";
+	static final  String OPENSEARCH_START_INDEX = "opensearch:startIndex";
 	static final String ITEMS_PER_PAGE = "opensearch:itemsPerPage";
 	static final String TOTAL_RESULTS = "opensearch:totalResults";
 	static final String KEY = "sdata:key";
-	
+	static final String REL = "rel";
+	static final String HREF = "href";	
+	static final String START_INDEX = "startIndex";
+		
 	private String feed;
 
 	protected BaseFeedParser(){

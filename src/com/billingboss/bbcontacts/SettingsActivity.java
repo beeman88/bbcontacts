@@ -76,7 +76,8 @@ public class SettingsActivity extends Activity {
 	
 	private void fillData() {
 		// Get settings cursor for the first row
-		Cursor c = mDbHelper.fetchSetting(1);
+		Cursor c = mDbHelper.fetchSetting(1);;
+
 		
 		if (c == null) {
 			ErrorHandler.LogToastError(ctx, TAG,
@@ -84,11 +85,15 @@ public class SettingsActivity extends Activity {
 			return;
 		}
 
-		// if cursor has rows, already moved to first
-		startManagingCursor(c);
-		username = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME));            	
-		password = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD));
-		c.close();
+		try {
+			// if cursor has rows, already moved to first
+			startManagingCursor(c);
+			username = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME));            	
+			password = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD));
+		}
+		finally {
+			c.close();
+		}
 		
 		setScreenData();
 		return;

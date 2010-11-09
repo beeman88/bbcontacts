@@ -11,7 +11,7 @@
         android:textSize="18sp"
         android:layout_alignParentTop="true"/> 
     <EditText 
-        android:id="@+id/username" 
+        android:id="@+id/username"  
         android:hint="@string/enter_username" 
         android:layout_width="fill_parent" 
         android:layout_height="wrap_content" 

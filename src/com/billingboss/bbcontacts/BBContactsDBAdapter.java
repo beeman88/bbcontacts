@@ -47,11 +47,8 @@ public class BBContactsDBAdapter {
     
     private static final String TABLE_CONTACTS = "contacts";
     public static final String CONTACT_ROWID = "_id";
+    public static final String CONTACT_ID = "contact_id";    
     public static final String CONTACT_CUSTOMER_ID = "customer_id";    
-    public static final String CONTACT_FIRST = "first";
-    public static final String CONTACT_LAST = "last";
-    public static final String CONTACT_EMAIL = "email";
-    public static final String CONTACT_PHONE = "phone";    
     public static final String CONTACT_UPDATED_AT = "updated_at";    
     
     private static final String TABLE_SETTINGS = "settings";
@@ -76,11 +73,8 @@ public class BBContactsDBAdapter {
         		"updated_at bigint);";
     private static final String DATABASE_CREATE_CONTACTS =
         "create table contacts (_id integer primary key autoincrement, " +
+        		"contact_id integer unique, " +
         		"customer_id integer, " +
-        		"first text not null, " +
-        		"last text not null, " +
-        		"email text null, " +
-        		"phone text null, " +
         		"updated_at bigint);";
     private static final String DATABASE_CREATE_SETTINGS =
         "create table settings (_id integer primary key autoincrement, " +
@@ -178,25 +172,19 @@ public class BBContactsDBAdapter {
      * a -1 to indicate failure.
      * 
      * @param customer_id the customer_id of the contact
-     * @param first the first name of the contact
-     * @param last the last name of the contact
-     * @param email the email of the contact 
-     * @param phone the phone of the contact 
+     * @param contact_id the id of the contact
      * @param updated_at the last updated timestamp of the contact
      * @return rowId or -1 if failed
      * @throws IOException 
      */
-    public long createContact(Integer customer_id, String first, String last, String email, String phone){
+    public long createContact(Integer contact_id, Integer customer_id ){
     	
         ContentValues initialValues = new ContentValues();
+        initialValues.put(CONTACT_ID, contact_id);        
         initialValues.put(CONTACT_CUSTOMER_ID, customer_id);
-        initialValues.put(CONTACT_FIRST, first);        
-        initialValues.put(CONTACT_LAST, last);
-        initialValues.put(CONTACT_EMAIL, email);
-        initialValues.put(CONTACT_PHONE, phone);        
         initialValues.put(CUSTOMER_UPDATED_AT, getCurrentTime());
 
-        return mDb.insert(TABLE_CUSTOMERS, null, initialValues);
+        return mDb.insert(TABLE_CONTACTS, null, initialValues);
     }
     
     /**
@@ -264,13 +252,7 @@ public class BBContactsDBAdapter {
     		mDb.query(TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID, CUSTOMER_NAME, CUSTOMER_BB_ID,
                 CUSTOMER_UPDATED_AT}, null, null, null, null, null);
     	
-        // if cursor null or has 0 rows
-        if (mCursor == null || mCursor.getCount() == 0) {
-        	return null;
-        }
-        
-        mCursor.moveToFirst();        
-        return mCursor;
+        return checkCursor(mCursor);
     }
 
     /**
@@ -280,8 +262,10 @@ public class BBContactsDBAdapter {
      */
     public Cursor fetchAllContacts() {
 
-        return mDb.query(TABLE_CONTACTS, new String[] {CONTACT_ROWID, CONTACT_CUSTOMER_ID,
-                CONTACT_FIRST, CONTACT_LAST, CONTACT_EMAIL, CONTACT_PHONE, CONTACT_UPDATED_AT}, null, null, null, null, null);
+    	Cursor mCursor =
+    		mDb.query(TABLE_CONTACTS, new String[] {CONTACT_ROWID, CONTACT_ID,
+                CONTACT_CUSTOMER_ID, CONTACT_UPDATED_AT}, null, null, null, null, null);
+        return checkCursor(mCursor);    	
     }
     
     /**
@@ -297,11 +281,7 @@ public class BBContactsDBAdapter {
             mDb.query(true, TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID,
                     CUSTOMER_NAME, CUSTOMER_BB_ID, CUSTOMER_UPDATED_AT}, CUSTOMER_ROWID + "=" + rowId, null,
                     null, null, null, null);
-        if (mCursor != null) {
-            mCursor.moveToFirst();
-        }
-        return mCursor;
-
+        return checkCursor(mCursor);
     }
     
     /**
@@ -315,13 +295,26 @@ public class BBContactsDBAdapter {
 
         Cursor mCursor =
             mDb.query(true, TABLE_CONTACTS, new String[] {CONTACT_ROWID,
-                    CONTACT_CUSTOMER_ID, CONTACT_FIRST, CONTACT_LAST, CONTACT_EMAIL, CONTACT_PHONE, CUSTOMER_UPDATED_AT}, CONTACT_ROWID + "=" + rowId, null,
+            		CONTACT_ID, CONTACT_CUSTOMER_ID, CUSTOMER_UPDATED_AT}, CONTACT_ROWID + "=" + rowId, null,
                     null, null, null, null);
-        if (mCursor != null) {
-            mCursor.moveToFirst();
-        }
-        return mCursor;
+        return checkCursor(mCursor);
 
+    }
+    
+    /**
+     * Return a Cursor positioned at the customer that matches the given rowId
+     * 
+     * @param rowId id of customer to retrieve
+     * @return Cursor positioned to matching note, if found
+     * @throws SQLException if note could not be found/retrieved
+     */
+    public Cursor fetchContactByContactId(long contactId) throws SQLException {
+
+        Cursor mCursor =
+            mDb.query(true, TABLE_CONTACTS, new String[] {CONTACT_ROWID,
+            		CONTACT_ID, CONTACT_CUSTOMER_ID, CUSTOMER_UPDATED_AT}, CONTACT_ID + "=" + contactId, null,
+                    null, null, null, null);
+        return checkCursor(mCursor);
     }
     
     /**
@@ -337,14 +330,18 @@ public class BBContactsDBAdapter {
             mDb.query(true, TABLE_SETTINGS, new String[] {SETTINGS_ROWID,
                     SETTINGS_USERNAME, SETTINGS_PASSWORD, SETTINGS_UPDATED_AT}, SETTINGS_ROWID + "=" + rowId, null,
                     null, null, null, null);
-        // if cursor null or has 0 rows
+        return checkCursor(mCursor);
+    }
+
+	private Cursor checkCursor(Cursor mCursor) {
+		// if cursor null or has 0 rows
         if (mCursor == null || mCursor.getCount() == 0) {
         	return null;
         }
         
         mCursor.moveToFirst();        
         return mCursor;
-    }
+	}
 
     /**
      * Update the customer using the details provided. The customer to be updated is
@@ -378,13 +375,10 @@ public class BBContactsDBAdapter {
      * @return true if the note was successfully updated, false otherwise
      */
     public boolean updateContact(
-    		long rowId, long customer_id, String first, String last, String email, String phone ) {
+    		long rowId, long contact_id, long customer_id ) {
         ContentValues args = new ContentValues();
+        args.put(CONTACT_ID, contact_id);        
         args.put(CONTACT_CUSTOMER_ID, customer_id);        
-        args.put(CONTACT_FIRST, first);
-        args.put(CONTACT_LAST, last);
-        args.put(CONTACT_EMAIL, email);
-        args.put(CONTACT_PHONE, phone);
         args.put(CONTACT_UPDATED_AT, getCurrentTime());
 
         return mDb.update(TABLE_CONTACTS, args, CONTACT_ROWID + "=" + rowId, null) > 0;
