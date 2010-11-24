@@ -2,30 +2,29 @@ package com.billingboss.bbcontacts;
 
 import java.util.HashMap;
 
-public class ContactRow extends HashMap {
+public class ContactRow extends HashMap<String, String> {
+	
+	private static final long serialVersionUID = 1L;	
 
-	public String name;
-	public String number;
-	public String email;
-	public static String KEY_NAME = "name";
-	public static String KEY_NUMBER = "number";
-	public static String KEY_EMAIL = "email";	
+	public String contact_id;
+	public String customer_id;
+	public static String KEY_CONTACT_ID = "contact_id";
+	public static String KEY_CUSTOMER_ID = "customer_id";
 
-	public ContactRow(String name, String number, String email) {
-		this.name = name;
-		this.number = number;
-		this.email = email;	    
+
+	public ContactRow(String contact_id, String customer_id) {
+		this.contact_id = contact_id;
+		this.customer_id = customer_id;
+    
 	}	
 
 	@Override
 	public String get(Object k) {
 		String key = (String) k;
-		if (KEY_NAME.equals(key))
-			return name;
-		else if (KEY_NUMBER.equals(key))
-			return number;
-		else if (KEY_EMAIL.equals(key))
-			return email;
+		if (KEY_CONTACT_ID.equals(key))
+			return contact_id;
+		else if (KEY_CUSTOMER_ID.equals(key))
+			return customer_id;
 		return null;
 	}	
 }

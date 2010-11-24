@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_read_customers"
+          android:title="@string/read_customers" />
+    <item android:id="@+id/menu_read_contacts"
+          android:title="@string/read_contacts" />          
+    <item android:id="@+id/menu_reset_database"
+          android:title="@string/reset_database" />
+    <item android:id="@+id/settings"
+          android:title="@string/menu_settings" />
+    <item android:id="@+id/customers"
+          android:title="@string/menu_customers" />          
+</menu>

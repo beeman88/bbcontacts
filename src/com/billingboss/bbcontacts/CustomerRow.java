@@ -2,8 +2,9 @@ package com.billingboss.bbcontacts;
 
 import java.util.HashMap;
 
-public class CustomerRow extends HashMap {
-
+public class CustomerRow extends HashMap<String, String> {
+	
+	private static final long serialVersionUID = 1L;
 	public String name;
 	public String bb_id;
 	public static String KEY_NAME = "name";

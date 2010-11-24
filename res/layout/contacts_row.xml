@@ -2,17 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content">
-	<TextView android:id="@+id/name"
+	<TextView android:id="@+id/contact_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="5px"/>    
-	<TextView android:id="@+id/number"
+	<TextView android:id="@+id/customer_id"
     	xmlns:android="http://schemas.android.com/apk/res/android"
     	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
     	android:layout_marginRight="5px"/>
-	<TextView android:id="@+id/email"
-    	xmlns:android="http://schemas.android.com/apk/res/android"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"/>    	
 </LinearLayout>

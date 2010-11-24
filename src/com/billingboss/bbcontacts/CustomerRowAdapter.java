@@ -13,6 +13,15 @@ import android.widget.SimpleAdapter;
 public class CustomerRowAdapter extends SimpleAdapter {
 
 	private List<CustomerRow> customers;
+	
+	public void setCustomers(List<CustomerRow> customers) {
+		this.customers = customers;
+	}
+
+	public List<CustomerRow> getCustomers() {
+		return customers;
+	}
+	
 	/*
 	* Alternating color list -- you could initialize this from anywhere.
 	* Note that the colors make use of the alpha here, otherwise they would be
@@ -27,7 +36,7 @@ public class CustomerRowAdapter extends SimpleAdapter {
 	        String[] from, 
 	        int[] to) {
 	  super(context, list, resource, from, to);
-	  this.customers = (List<CustomerRow>) list;
+	  this.setCustomers((List<CustomerRow>) list);
 	}
 
 	@Override

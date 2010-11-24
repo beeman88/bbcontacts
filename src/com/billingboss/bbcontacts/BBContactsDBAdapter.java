@@ -240,6 +240,15 @@ public class BBContactsDBAdapter {
         return mDb.delete(TABLE_CONTACTS, CONTACT_ROWID + "=" + rowId, null) > 0;
     }
     
+    /**
+     * Delete all contacts
+     * 
+     * @return true if deleted, false otherwise
+     */
+    public boolean deleteContacts() {
+
+        return mDb.delete(TABLE_CONTACTS, null, null) > 0;
+    }    
 
     /**
      * Return a Cursor over the list of all customers in the database

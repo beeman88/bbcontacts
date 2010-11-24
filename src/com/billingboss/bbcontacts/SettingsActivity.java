@@ -69,6 +69,9 @@ public class SettingsActivity extends Activity {
 		case R.id.customers:
 			startActivity(new Intent(this, CustomerActivity.class));
         	return true;
+		case R.id.database:
+			startActivity(new Intent(this, DatabaseActivity.class));
+        	return true;
 		}
 		
 		return super.onOptionsItemSelected(item);
@@ -76,7 +79,7 @@ public class SettingsActivity extends Activity {
 	
 	private void fillData() {
 		// Get settings cursor for the first row
-		Cursor c = mDbHelper.fetchSetting(1);;
+		Cursor c = mDbHelper.fetchSetting(1);
 
 		
 		if (c == null) {

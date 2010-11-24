@@ -1,4 +1,4 @@
-package com.billingboss.bbcontacts;
+/*package com.billingboss.bbcontacts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,3 +108,4 @@ public class ContactActivity extends ListActivity {
 	}
 	
 }
+*/
