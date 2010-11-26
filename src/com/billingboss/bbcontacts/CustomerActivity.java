@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.message.BasicNameValuePair;
 import org.xmlpull.v1.XmlSerializer;
 import android.app.ListActivity;
 import android.content.ContentResolver;
@@ -42,8 +41,7 @@ public class CustomerActivity extends ListActivity {
 	private Context ctx;
 	private String company;
 	private Integer customer_id;
-	private static String username = "";
-	private static String password = "";
+	private static RestClient client;
 	
 	private static final int CONTACT_PICKER_RESULT = 1001;	
 	
@@ -106,7 +104,16 @@ public class CustomerActivity extends ListActivity {
 		
     	// customers are retrieved in batches
     	do {
-    		client = getRestClient(currentIndex);    		
+    		// getRestClient creates rest client
+    		client = getRestClient(currentIndex); 
+    		
+    		// check if username, password entered
+    		if (client.getUsername().equals("") || 
+   				client.getPassword().equals("")) {
+	    		ErrorHandler.LogToastError(ctx, TAG, 
+		    			getString(R.string.settings_err_not_created));
+    			return;
+    		}
     		
     		// make the request 
     		String response = client.next();
@@ -147,7 +154,7 @@ public class CustomerActivity extends ListActivity {
 	}
 
 	private RestClient getRestClient(int startIndex) {
-		RestClient client = new RestClient(CUSTOMER_URL);
+		client = new RestClient(CUSTOMER_URL);
     	client.AddParam("select", "name");
     	client.AddParam("startIndex", Integer.toString(startIndex));    	
     	//client.AddHeader("Authorization", "Basic YmVlbWFuOnRlc3Q=");    	
@@ -156,9 +163,9 @@ public class CustomerActivity extends ListActivity {
 	}
 
 	private String getBasicAuth() {
-		
 		// if username and password are null, retrieve from settings table
-		if (username.compareTo("") == 0 && password.compareTo("") == 0)
+		if (client.getUsername().compareTo("") == 0 &&
+			client.getPassword().compareTo("") == 0)
 		{
 			// read settings to get user name and password
 	    	Cursor c = mDbHelper.fetchSetting(1);
@@ -170,15 +177,15 @@ public class CustomerActivity extends ListActivity {
 			}    	
 	    	
 			try {
-				username = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME));            	
-				password = c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD));
+				client.setUsername(c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_USERNAME)));            	
+				client.setPassword(c.getString(c.getColumnIndex(BBContactsDBAdapter.SETTINGS_PASSWORD)));
 			}
 			finally {
 				c.close();
 			}
 		}
     	// Add basic authorization to header
-    	return Settings.getBasicAuth(username, password);
+    	return Settings.getBasicAuth(client.getUsername(), client.getPassword());
 	}
 	
 	private void setScreenList() {

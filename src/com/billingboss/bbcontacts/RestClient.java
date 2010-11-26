@@ -31,6 +31,8 @@ public class RestClient implements Iterator {
     private ArrayList <NameValuePair> headers;
 
     private String url;
+    private String username;
+    private String password;
 
     private int responseCode;
     private String message;
@@ -40,6 +42,22 @@ public class RestClient implements Iterator {
     private int totalResults;
     private int itemsPerPage;
     private int startIndex;
+    
+    public void setUsername (String username) {
+    	this.username = username;
+    }
+    
+    public String getUsername () {
+    	return this.username;
+    }
+    
+    public void setPassword (String password) {
+    	this.password = password;
+    }
+    
+    public String getPassword () {
+    	return this.password;
+    }
 
     public String getResponse() {
         return response;
@@ -77,6 +95,8 @@ public class RestClient implements Iterator {
     public RestClient(String url)
     {
         this.url = url;
+        this.username = "";
+        this.password = "";
         params = new ArrayList<NameValuePair>();
         headers = new ArrayList<NameValuePair>();
     }
