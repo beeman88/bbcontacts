@@ -65,7 +65,7 @@ public class CustomerActivity extends ListActivity {
             public void onClick(View v) {
                 setCustomers();
             }
-        });		
+        });	
 		
 		ctx = getApplicationContext();
 		
@@ -244,7 +244,7 @@ public class CustomerActivity extends ListActivity {
         		// insert into phone database contact, customer
             	insertContact(contact_id.longValue());
 
-        		// update company in contact with billingboss customer name            	
+        		// TODO update company in contact with billingboss customer name            	
             	// updateContactCompany(id);
                 break;
             }

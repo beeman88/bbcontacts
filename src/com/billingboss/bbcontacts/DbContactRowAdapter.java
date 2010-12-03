@@ -6,10 +6,9 @@ import java.util.Map;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckedTextView;
 import android.widget.SimpleAdapter;
 
-public class ContactRowAdapter extends SimpleAdapter { 
+public class DbContactRowAdapter extends SimpleAdapter { 
 
 	private List<ContactRow> contacts;
 	/*
@@ -20,8 +19,8 @@ public class ContactRowAdapter extends SimpleAdapter {
 	private int[] colors = new int[] { 0x30ffffff, 0x30808080 };
 
 	@SuppressWarnings("unchecked")
-	public ContactRowAdapter(Context context, 
-	        List<? extends Map<String, Contact>> list, 
+	public DbContactRowAdapter(Context context, 
+	        List<? extends Map<String, String>> list, 
 	        int resource, 
 	        String[] from, 
 	        int[] to) {
@@ -32,15 +31,6 @@ public class ContactRowAdapter extends SimpleAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 	  View view = super.getView(position, convertView, parent);
-	  
-	  // wow put the checkbox click listener here - toggle
-      CheckedTextView chkBox = (CheckedTextView) view.findViewById(R.id.row_checkbox);
-	  chkBox.setOnClickListener(new View.OnClickListener() {
-	      public void onClick(View v)
-	      {
-	          ((CheckedTextView) v).toggle();
-	      }
-	    });			
 
 	  int colorPos = position % colors.length;
 	  view.setBackgroundColor(colors[colorPos]);

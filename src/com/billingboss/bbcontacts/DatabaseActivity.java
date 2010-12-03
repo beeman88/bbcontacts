@@ -57,9 +57,10 @@ public class DatabaseActivity extends ListActivity {
 		case R.id.menu_read_customers:
 			getCustomers();
 	    	return true;
-		case R.id.menu_read_contacts:
+	    	// TODO add this back in 
+/*		case R.id.menu_read_contacts:
 			getContacts();
-		    return true;
+		    return true;*/
 		case R.id.menu_reset_database:
 			resetDatabase();
 			return true;
@@ -98,7 +99,7 @@ public class DatabaseActivity extends ListActivity {
 		
 	}
 	
-	private void getContacts() {
+/*	private void getContacts() {
 		ArrayList<ContactRow>contactList = new ArrayList<ContactRow>();
 		
 		// Get all of the Contacts from the database and create the item list
@@ -126,7 +127,7 @@ public class DatabaseActivity extends ListActivity {
 		// use customerList to display on the screen
 		setContactList(contactList);        
 		
-	}
+	}*/
 
 	private void setCustomerList(ArrayList<CustomerRow> customerList) {
 		
@@ -139,7 +140,7 @@ public class DatabaseActivity extends ListActivity {
 		this.setListAdapter(adapter);        
 	}
 	
-	private void setContactList(ArrayList<ContactRow> contactList) {
+/*	private void setContactList(ArrayList<ContactRow> contactList) {
 		
 		ListAdapter adapter = new ContactRowAdapter(this, 
 				(List<? extends Map<String, String>>) contactList,
@@ -148,7 +149,7 @@ public class DatabaseActivity extends ListActivity {
 				new int[] { R.id.db_contact_id, R.id.db_customer_id });     
 
 		this.setListAdapter(adapter);        
-	}
+	}*/
 	
 	private void resetDatabase() {
 		mDbHelper.deleteCustomers();

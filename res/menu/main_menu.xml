@@ -6,5 +6,8 @@
           />
     <item android:id="@+id/settings"
           android:title="@string/menu_settings" 
-          android:icon="@drawable/options"/>          
+          android:icon="@drawable/options"/>
+    <item android:id="@+id/contacts"
+          android:title="@string/menu_contacts" 
+          />          
 </menu>

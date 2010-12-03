@@ -52,6 +52,9 @@ public class bbcontacts extends Activity {
         	return true;
 		case R.id.settings:
 			startActivity(new Intent(this, SettingsActivity.class));			
+        	return true;
+		case R.id.contacts:
+			startActivity(new Intent(this, ContactActivity.class));			
         	return true;        	
 		}        
 		return super.onOptionsItemSelected(item);
