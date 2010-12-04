@@ -17,8 +17,7 @@
 	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content"
 	    android:orientation="vertical"
-	    android:layout_alignParentBottom="true"
-	    >
+	    android:layout_alignParentBottom="true">
 		<Button android:id="@+id/button_get_cust"
 	        android:text="@string/get_customers"
 	        style="?android:attr/buttonStyleSmall"
@@ -26,7 +25,6 @@
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
 	        android:layout_marginRight="5dip"/>
-	        />
 		<Button android:id="@+id/button_set_cust"
 	        android:text="@string/set_customers"
 	        style="?android:attr/buttonStyleSmall"

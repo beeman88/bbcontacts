@@ -32,5 +32,6 @@
 	<string name="read_customers">Read Customers</string>	
 	<string name="read_contacts">Read Contacts</string>	
 	<string name="reset_database">Reset Database</string>	
-	<string name="send_file">Send Contacts to BB</string>		
+	<string name="send_file">Send Contacts to BB</string>
+	<string name="address">Address</string>			
 </resources>
