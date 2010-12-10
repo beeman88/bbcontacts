@@ -11,43 +11,43 @@ public class Address {
  	private String asString = "";
  	
  	public String getType() {
- 		return type;
+ 		return isNotNullAndEmpty(type);
  	}
  	public void setType(String type) {
  		this.type = type;
  	}
  	public String getPoBox() {
- 		return poBox;
+ 		return isNotNullAndEmpty(poBox);
  	}
  	public void setPoBox(String poBox) {
  		this.poBox = poBox;
  	}
  	public String getStreet() {
- 		return street;
+ 		return isNotNullAndEmpty(street);
  	}
  	public void setStreet(String street) {
  		this.street = street;
  	}
  	public String getCity() {
- 		return city;
+ 		return isNotNullAndEmpty(city);
  	}
  	public void setCity(String city) {
  		this.city = city;
  	}
  	public String getState() {
- 		return state;
+ 		return isNotNullAndEmpty(state);
  	}
  	public void setState(String state) {
  		this.state = state;
  	}
  	public String getPostalCode() {
- 		return postalCode;
+ 		return isNotNullAndEmpty(postalCode);
  	}
  	public void setPostalCode(String postalCode) {
  		this.postalCode = postalCode;
  	}
  	public String getCountry() {
- 		return country;
+ 		return isNotNullAndEmpty(country);
  	}
  	public void setCountry(String country) {
  		this.country = country;
@@ -93,6 +93,13 @@ public class Address {
  		this.setPostalCode(postal);
  		this.setCountry(country);
  		this.setType(type);
+ 	}
+ 	
+ 	public String isNotNullAndEmpty(String str) {
+ 	    if((null == str) || (str.length() == 0)) {
+ 	        return "";
+ 	    }
+        return str;
  	}
  }
 

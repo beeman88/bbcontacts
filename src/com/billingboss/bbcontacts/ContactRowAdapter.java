@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckedTextView;
@@ -22,6 +23,7 @@ public class ContactRowAdapter extends SimpleAdapter {
 	* opaque and wouldn't give good results!
 	*/
 	private int[] colors = new int[] { 0x30ffffff, 0x30808080 };
+	private final String TAG = "ContactRowAdapter";
 
 	@SuppressWarnings("unchecked")
 	public ContactRowAdapter(Context context, 
@@ -49,28 +51,53 @@ public class ContactRowAdapter extends SimpleAdapter {
 	      }
 	    });
 	  
-	  
 	  ImageView more = (ImageView) view.findViewById(R.id.more);
 	  more.setOnClickListener(new View.OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
-		  ContactRow row = contacts.get(pos);	
-	    	final CharSequence[] items = {
-	    			row.address.getStreet(), 
-	    			row.address.getCity(), 
-	    			row.address.getCountry()};
+		  try {	
+		  ContactRow row = contacts.get(pos);
+		  
+      	  AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+	      builder.setTitle(ctx.getString(R.string.address));
 
-	    	AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-	    	builder.setTitle(ctx.getString(R.string.address));
-	    	
-	    	builder.setItems(items, new DialogInterface.OnClickListener() {
-	    	    public void onClick(DialogInterface dialog, int item) {
-	    	        //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-	    	    }
-	    	});
-	    	AlertDialog dialog = builder.create();
-	    	dialog.show();
+	      // if address is null show an empty dialog
+	      String street = "";
+	      String poBox = "";
+	      String city = "";
+	      String state = "";
+	      String country = "";
+	      String postal = "";
+	      
+	      if (row.address != null) {
+	    	  street = row.address.getStreet();
+	    	  poBox = row.address.getPoBox();
+	    	  city = row.address.getCity();
+	    	  state = row.address.getState();
+	    	  country = row.address.getCountry();
+	    	  postal = row.address.getPostalCode();
+	      }
+
+    	  final CharSequence[] items = {
+    			  street,
+    			  poBox,
+    			  city, 
+    			  state,
+    			  postal,
+    			  country};
+
+    	  builder.setItems(items, new DialogInterface.OnClickListener() {
+    		  public void onClick(DialogInterface dialog, int item) {
+    			  //Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+    		  }
+    	  });
+	      AlertDialog dialog = builder.create();
+	      dialog.show();
+		  }
+		  catch (Exception e) {
+			  Log.e(TAG, e.getMessage());
+		  }
 		}
 	});
 

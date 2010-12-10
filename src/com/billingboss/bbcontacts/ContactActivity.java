@@ -1,18 +1,21 @@
 package com.billingboss.bbcontacts;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -48,8 +51,9 @@ public class ContactActivity extends ListActivity {
 	private static final String CSV_HDG_WEB = "customer_website";
 	private static final String CSV_HDG_PHONE = "customer_phone";
 	private static final String CSV_HDG_LANG = "customer_language";
-	private static final String CSV_HDG_CONTACT_FIRST = "contact_first";
-	private static final String CSV_HDG_CONTACT_LAST = "contact_last";
+	private static final String CSV_HDG_FAX = "customer_fax";
+	private static final String CSV_HDG_CONTACT_FIRST = "contact_first_name";
+	private static final String CSV_HDG_CONTACT_LAST = "contact_last_name";
 	private static final String CSV_HDG_CONTACT_EMAIL = "contact_email";	
 	private static final String CSV_HDG_CONTACT_PHONE = "contact_phone";
 
@@ -62,6 +66,7 @@ public class ContactActivity extends ListActivity {
 		btnGetCust.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
 				saveContacts();
+				//sendContacts();
 			}
 		});
 
@@ -93,28 +98,33 @@ public class ContactActivity extends ListActivity {
 		while (mCur.moveToNext()) {
 			String id = mCur.getString(mCur.getColumnIndex(ContactsContract.Contacts._ID));
 			String name = mCur.getString(mCur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-			String phone = "";
+			String phoneContact = "";
+			String phoneCompany = "";
 			String email = "";
+			String org = "";
+			String website = "";
 			
 			// phone
 			if (Integer.parseInt(mCur.getString(
 					mCur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
-				phone = getPhone(id);
+				phoneContact = getPhone(id, ContactsContract.CommonDataKinds.Phone.TYPE_WORK);
+				phoneCompany = getPhone(id, ContactsContract.CommonDataKinds.Phone.TYPE_COMPANY_MAIN);
 			}
 			
 			// email
-			email = getEmail(id);
+			email = getEmail(id, ContactsContract.CommonDataKinds.Email.TYPE_WORK);
 			
 			// address
-			ArrayList<Address> addresses = getContactAddresses(id);
-			Address address = null;
+			Address address = getAddress(id, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK);
 			
-			if (addresses.size() > 0) {
-				address = addresses.get(0);
-			}
+			// organization
+			org = getOrg(id, ContactsContract.CommonDataKinds.Organization.TYPE_WORK);
+			
+			// website
+			website = getWebsite(id, ContactsContract.CommonDataKinds.Website.TYPE_WORK);
 			
 			// add contact row to list
-			contactList.add(new ContactRow(id, name, address, phone, email));
+			contactList.add(new ContactRow(id, org, name, address, website, phoneCompany, email, phoneContact));
 		}
 		mCur.close();
 
@@ -127,11 +137,11 @@ public class ContactActivity extends ListActivity {
 		ListAdapter adapter = new ContactRowAdapter(this, 
 				(List<? extends Map<String, Contact>>) contactList,
 				R.layout.contacts_row, 
-				new String[] {ContactRow.KEY_CONTACT_ID, 
+				new String[] {ContactRow.KEY_ORGANIZATION, 
 			ContactRow.KEY_DISPLAY_NAME,
 			ContactRow.KEY_EMAIL,
-			ContactRow.KEY_PHONE}, 
-			new int[] {R.id.contact_id, R.id.display_name, R.id.email, R.id.phone});     
+			ContactRow.KEY_CONTACT_PHONE}, 
+			new int[] {R.id.org, R.id.display_name});     
 
 		this.setListAdapter(adapter);        
 		Toast.makeText(this, contactList.size() + "", Toast.LENGTH_LONG).show();
@@ -164,6 +174,8 @@ public class ContactActivity extends ListActivity {
 			writer.append(',');
 			writer.append(CSV_HDG_LANG);
 			writer.append(',');
+			writer.append(CSV_HDG_FAX);
+			writer.append(',');
 			writer.append(CSV_HDG_CONTACT_FIRST);
 			writer.append(',');	
 			writer.append(CSV_HDG_CONTACT_LAST);
@@ -189,34 +201,36 @@ public class ContactActivity extends ListActivity {
 				}
 
 				ContactRow contactRow = contactList.get(i);
-
-				writer.append("CSV_HDG_NAME");
+				writer.append(contactRow.organization.trim());
 				writer.append(',');
-				writer.append("CSV_HDG_ADD1");
+				writer.append(contactRow.address.getStreet().trim());
 				writer.append(',');
-				writer.append("CSV_HDG_ADD2");
+				writer.append(contactRow.address.getPoBox().trim());
 				writer.append(',');
-				writer.append("CSV_HDG_CITY");
+				writer.append(contactRow.address.getCity().trim());
 				writer.append(',');		 	    
-				writer.append("CSV_HDG_PROV");
+				writer.append(contactRow.address.getState().trim());
 				writer.append(',');
-				writer.append("CSV_HDG_POST");
+				writer.append(contactRow.address.getPostalCode().trim());
 				writer.append(',');
-				writer.append("CSV_HDG_COUNTRY");
+				writer.append(contactRow.address.getCountry().trim());
 				writer.append(',');
-				writer.append("CSV_HDG_WEB");
+				writer.append(contactRow.website.trim());
 				writer.append(',');	
-				writer.append("CSV_HDG_PHONE");
+				writer.append(contactRow.company_phone.trim());
 				writer.append(',');
-				writer.append("CSV_HDG_LANG");
+				// TODO have a language default in settings
+				writer.append(Locale.getDefault().getLanguage().trim());
 				writer.append(',');
-				writer.append(contactRow.first_name);
+				writer.append("(604) 207-FAXX");
+				writer.append(',');
+				writer.append(contactRow.first_name.trim());
 				writer.append(',');	
-				writer.append(contactRow.last_name);
+				writer.append(contactRow.last_name.trim());
 				writer.append(',');
-				writer.append(contactRow.email);
+				writer.append(contactRow.email.trim());
 				writer.append(',');
-				writer.append(contactRow.phone);
+				writer.append(contactRow.contact_phone.trim());
 				writer.append('\n');
 			}
 
@@ -225,47 +239,164 @@ public class ContactActivity extends ListActivity {
 		}
 		catch(IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, e.getLocalizedMessage());
 		}
 	}
 	
-	private String getPhone(String id) {
-		String phone = "";
+	/*private void sendContacts() {
+		HttpURLConnection connection = null;
+		DataOutputStream outputStream = null;
+		DataInputStream inputStream = null;
+
+		File root = Environment.getExternalStorageDirectory();
+		
+		String pathToOurFile = root.getAbsolutePath() + '/' + CSV_FILENAME;
+		String urlServer = "www.billingboss.com/customers/import";
+		String lineEnd = "\n";
+		String twoHyphens = "--";
+		String boundary =  "*****";
+
+		int bytesRead, bytesAvailable, bufferSize;
+		byte[] buffer;
+		int maxBufferSize = 1*1024*1024;
+
+		try
+		{
+		FileInputStream fileInputStream = new FileInputStream(new File(pathToOurFile) );
+
+		URL url = new URL(urlServer);
+		connection = (HttpURLConnection) url.openConnection();
+
+		// Allow Inputs & Outputs
+		connection.setDoInput(true);
+		connection.setDoOutput(true);
+		connection.setUseCaches(false);
+
+		// Enable POST method
+		connection.setRequestMethod("POST");
+
+		connection.setRequestProperty("Connection", "Keep-Alive");
+		connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
+
+		outputStream = new DataOutputStream( connection.getOutputStream() );
+		outputStream.writeBytes(twoHyphens + boundary + lineEnd);
+		outputStream.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + pathToOurFile +"\"" + lineEnd);
+		outputStream.writeBytes(lineEnd);
+
+		bytesAvailable = fileInputStream.available();
+		bufferSize = Math.min(bytesAvailable, maxBufferSize);
+		buffer = new byte[bufferSize];
+
+		// Read file
+		bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+		while (bytesRead > 0)
+		{
+		outputStream.write(buffer, 0, bufferSize);
+		bytesAvailable = fileInputStream.available();
+		bufferSize = Math.min(bytesAvailable, maxBufferSize);
+		bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+		}
+
+		outputStream.writeBytes(lineEnd);
+		outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+		// Responses from the server (code and message)
+		int serverResponseCode = connection.getResponseCode();
+		String serverResponseMessage = connection.getResponseMessage();
+
+		fileInputStream.close();
+		outputStream.flush();
+		outputStream.close();
+		}
+		catch (Exception ex)
+		{
+		//Exception handling
+		}		
+	}*/
+	
+	private String getPhone(String id, int type) {
+		ArrayList<Phone> phones = getPhones(id, type);
+		
+		// if no phones return empty
+		if (phones.size() == 0) {
+			return "";
+		}
+		
+		return phones.get(0).getNumber();
+	}
+	
+	private ArrayList<Phone> getPhones(String id, int type) {
+		ArrayList<Phone> phones = new ArrayList<Phone>();
+		
+		// TODO this cursor will only grab work phones
+		// settings needs to specify priority sequence of phones to use
 		Cursor pCur = managedQuery(
 				ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
 				null, 
-				ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?", 
-				new String[]{id}, null);
-		if (pCur.moveToFirst()) {
-			phone = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-		} 
+				ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ? AND " + 
+				ContactsContract.CommonDataKinds.Phone.TYPE + " = ?", 
+				new String[]{id, Integer.toString(type)}, 
+				null);
+		if (pCur.moveToNext()) {
+			phones.add(new Phone(
+ 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)),
+ 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))
+ 			));		} 
 		pCur.close();
-		return phone;
-	}	
+		
+		return phones;
+	}
 	
-	private String getEmail(String id) {
-		String email = "";
+	private String getEmail(String id, int type) {
+		ArrayList<Email> emails = getEmails(id, type);
+		
+		// if no phones return empty
+		if (emails.size() == 0) {
+			return "";
+		}
+		
+		return emails.get(0).getAddress();		
+	}
+	
+	private ArrayList<Email> getEmails(String id, int type) {
+		ArrayList<Email> emails = new ArrayList<Email>();
 		Cursor emailCur = managedQuery( 
 				ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
 				null,
-				ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?", 
-				new String[]{id}, null); 
-		if (emailCur.moveToFirst()) { 
-			// This would allow you get several email addresses
-			// if the email addresses were stored in an array
-			email = emailCur.getString(
-					emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+				ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ? AND " +
+				ContactsContract.CommonDataKinds.Email.TYPE + " = ?", 
+				new String[]{id, Integer.toString(type)}, 
+				null); 
+		if (emailCur.moveToNext()) {
+			String address = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+			//String type = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+ 			emails.add(new Email(address, Integer.toString(type)));
 		} 
 		emailCur.close();
-		return email;
+		return emails;
 	}
 	
-	public ArrayList<Address> getContactAddresses(String id) {
+	private Address getAddress(String id, int type) {
+		ArrayList<Address> addresses = getAddresses(id, type);
+		
+		// if no addresses return null
+		if (addresses.size() == 0) {
+			return null;
+		}
+		
+		return addresses.get(0);		
+	}
+	
+	private ArrayList<Address> getAddresses(String id, int type) {
 	ArrayList<Address> addrList = new ArrayList<Address>();
 
-	String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + ContactsContract.Data.MIMETYPE + " = ?"; 
+	String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + 
+				   ContactsContract.Data.MIMETYPE + " = ? AND " +
+				   ContactsContract.CommonDataKinds.StructuredPostal.TYPE + " = ?"; 
 	String[] whereParameters = new String[]{id, 
-			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE}; 
+			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE,
+			Integer.toString(type)}; 
 
 	Cursor addrCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null); 
 	while(addrCur.moveToNext()) {
@@ -275,14 +406,82 @@ public class ContactActivity extends ListActivity {
 		String state = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));
 		String postalCode = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));
 		String country = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
-		String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
-		Address a = new Address(poBox, street, city, state, postalCode, country, type);
-		addrList.add(a);
+		//String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
+		addrList.add(new Address(poBox, street, city, state, postalCode, country, Integer.toString(type)));
 	} 
 	addrCur.close();
 	return(addrList);
-}
+	}
+	
+	private String getOrg(String id, int type) {
+		ArrayList<Organization> orgs = getOrgs(id, type);
+		
+		// if no orgs return ""
+		if (orgs.size() == 0) {
+			return "";
+		}
+		
+		return orgs.get(0).getOrganization();		
+	}
 
+	private ArrayList<Organization> getOrgs(String id, int type) {
+ 		ArrayList<Organization> orgs = new ArrayList<Organization>();
+ 		String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + 
+ 					   ContactsContract.Data.MIMETYPE + " = ? AND " +
+ 					   ContactsContract.CommonDataKinds.Organization.TYPE + " = ?"; 
+ 		String[] whereParameters = new String[]{id, 
+ 				ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE,
+ 				Integer.toString(type)}; 
+ 		
+ 		Cursor orgCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null);
+ 
+ 		if (orgCur.moveToNext()) { 
+ 			String orgName = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DATA));
+ 			String title = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
+ 			//String type = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TYPE));
+ 			orgs.add(new Organization(orgName, title, Integer.toString(type)));
+ 			
+ 		} 
+ 		orgCur.close();
+ 		return(orgs);
+ 	}
+	
+	private String getWebsite(String id, int type) {
+		ArrayList<Website> websites = getWebsites(id, type);
+		
+		// if no websites return ""
+		if (websites.size() == 0) {
+			return "";
+		}
+		
+		return websites.get(0).getUrl();		
+	}
+
+	private ArrayList<Website> getWebsites(String id, int type) {
+		ArrayList<Website> websites = new ArrayList<Website>();
+		
+ 		String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + 
+		   ContactsContract.Data.MIMETYPE + " = ? AND " +
+		   ContactsContract.CommonDataKinds.Organization.TYPE + " = ?"; 
+ 		String[] whereParameters = new String[]{id, 
+ 				ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE,
+ 				Integer.toString(ContactsContract.CommonDataKinds.Website.TYPE_WORK)}; 
+		
+		Cursor websiteCur = managedQuery( 
+				ContactsContract.Data.CONTENT_URI, 
+				null,
+				where,
+				whereParameters,
+				null); 
+		if (websiteCur.moveToNext()) {
+			String url = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
+			//String type = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE));
+ 			websites.add(new Website(url, Integer.toString(type)));
+		} 
+		websiteCur.close();
+		return websites;
+ 	}
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 

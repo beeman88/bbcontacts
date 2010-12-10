@@ -55,7 +55,18 @@ public class BBContactsDBAdapter {
     public static final String SETTINGS_ROWID = "_id";
     public static final String SETTINGS_USERNAME = "username";
     public static final String SETTINGS_PASSWORD = "password";    
-    public static final String SETTINGS_UPDATED_AT = "updated_at";    
+    public static final String SETTINGS_UPDATED_AT = "updated_at";
+    
+    private static final String TABLE_PREFERENCES = "preferences";
+    public static final String PREFERENCES_ROWID = "_id";
+    public static final String PREFERENCES_FIELD = "field";
+    public static final String PREFERENCES_TYPE = "type";    
+    public static final String PREFERENCES_SEQUENCE = "sequence"; 
+    
+    public static final String FIELD_EMAIL = "1";
+    public static final String FIELD_ADDRESS = "2";
+    public static final String FIELD_ORGANIZATION = "3";
+    public static final String FIELD_PHONE = "4";    
     
     private static final int DATABASE_VERSION = 1;	
 
@@ -80,7 +91,12 @@ public class BBContactsDBAdapter {
         "create table settings (_id integer primary key autoincrement, " +
                 "username text, " +
                 "password text, " +                
-        		"updated_at bigint);";    
+        		"updated_at bigint);";
+    private static final String DATABASE_CREATE_PREFERENCES =
+        "create table preferences (_id integer primary key autoincrement, " +
+                "field int, " +
+                "type int, " +                
+        		"sequence int);";    
 
     private final Context mCtx;
     
@@ -96,6 +112,7 @@ public class BBContactsDBAdapter {
             db.execSQL(DATABASE_CREATE_CUSTOMERS);
             db.execSQL(DATABASE_CREATE_CONTACTS);
             db.execSQL(DATABASE_CREATE_SETTINGS);
+            db.execSQL(DATABASE_CREATE_PREFERENCES);
         }
 
         @Override
@@ -105,6 +122,7 @@ public class BBContactsDBAdapter {
             db.execSQL("DROP TABLE IF EXISTS customers");
             db.execSQL("DROP TABLE IF EXISTS contacts");
             db.execSQL("DROP TABLE IF EXISTS settings");
+            db.execSQL("DROP TABLE IF EXISTS preferences");
             onCreate(db);
         }
     }
@@ -188,8 +206,8 @@ public class BBContactsDBAdapter {
     }
     
     /**
-     * Create a new setting using the username, password. If the contact is
-     * successfully created return the new rowId for that contact, otherwise return
+     * Create a new setting using the username, password. If the setting is
+     * successfully created return the new rowId for that setting, otherwise return
      * a -1 to indicate failure.
      * 
      * @param username for the settings billing boss username
@@ -208,6 +226,27 @@ public class BBContactsDBAdapter {
         return mDb.insert(TABLE_SETTINGS, null, initialValues);
     }    
 
+    /**
+     * Create a new preference using field, type, sequence. If the preference is
+     * successfully created return the new rowId for that preference, otherwise return
+     * a -1 to indicate failure.
+     * 
+     * @param field for the contact field (EMAIL, PHONE, ADDRESS, ORGANIZATION, WEBSITE) 
+     * @param type for the type of field (WORK, MOBILE, HOME .... )
+     * @param sequence for the priority
+     * @return rowId or -1 if failed
+     * @throws IOException 
+     */
+    public long createPreference(int field, int type, int sequence){
+    	
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(PREFERENCES_FIELD, field);        
+        initialValues.put(PREFERENCES_TYPE, type);
+        initialValues.put(PREFERENCES_SEQUENCE, sequence);
+
+        return mDb.insert(TABLE_PREFERENCES, null, initialValues);
+    }    
+    
     /**
      * Delete the customer with the given rowId
      * 
@@ -248,33 +287,38 @@ public class BBContactsDBAdapter {
     public boolean deleteContacts() {
 
         return mDb.delete(TABLE_CONTACTS, null, null) > 0;
-    }    
-
-    /**
-     * Return a Cursor over the list of all customers in the database
-     * 
-     * @return Cursor over all notes
-     */
-    public Cursor fetchAllCustomers() {
-
-    	Cursor mCursor =
-    		mDb.query(TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID, CUSTOMER_NAME, CUSTOMER_BB_ID,
-                CUSTOMER_UPDATED_AT}, null, null, null, null, null);
-    	
-        return checkCursor(mCursor);
     }
-
+    
     /**
-     * Return a Cursor over the list of all contacts in the database
+     * Delete the preference with the given rowId
      * 
-     * @return Cursor over all notes
+     * @param rowId id of contact to delete
+     * @return true if deleted, false otherwise
      */
-    public Cursor fetchAllContacts() {
+    public boolean deletePreference(long rowId) {
 
-    	Cursor mCursor =
-    		mDb.query(TABLE_CONTACTS, new String[] {CONTACT_ROWID, CONTACT_ID,
-                CONTACT_CUSTOMER_ID, CONTACT_UPDATED_AT}, null, null, null, null, null);
-        return checkCursor(mCursor);    	
+        return mDb.delete(TABLE_PREFERENCES, PREFERENCES_ROWID + "=" + rowId, null) > 0;
+    }
+    
+    /**
+     * Delete the preference with the given rowId
+     * 
+     * @param field of preferences to delete
+     * @return true if deleted, false otherwise
+     */
+    public boolean deletePreferencesByField(int field) {
+
+        return mDb.delete(TABLE_PREFERENCES, PREFERENCES_FIELD + "=" + field, null) > 0;
+    }
+    
+    /**
+     * Delete all preferences
+     * 
+     * @return true if deleted, false otherwise
+     */
+    public boolean deletePreferences() {
+
+        return mDb.delete(TABLE_PREFERENCES, null, null) > 0;
     }
     
     /**
@@ -290,6 +334,20 @@ public class BBContactsDBAdapter {
             mDb.query(true, TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID,
                     CUSTOMER_NAME, CUSTOMER_BB_ID, CUSTOMER_UPDATED_AT}, CUSTOMER_ROWID + "=" + rowId, null,
                     null, null, null, null);
+        return checkCursor(mCursor);
+    }
+
+    /**
+     * Return a Cursor over the list of all customers in the database
+     * 
+     * @return Cursor over all customers
+     */
+    public Cursor fetchAllCustomers() {
+
+    	Cursor mCursor =
+    		mDb.query(TABLE_CUSTOMERS, new String[] {CUSTOMER_ROWID, CUSTOMER_NAME, CUSTOMER_BB_ID,
+                CUSTOMER_UPDATED_AT}, null, null, null, null, null);
+    	
         return checkCursor(mCursor);
     }
     
@@ -309,13 +367,26 @@ public class BBContactsDBAdapter {
         return checkCursor(mCursor);
 
     }
+
+    /**
+     * Return a Cursor over the list of all contacts in the database
+     * 
+     * @return Cursor over all contacts
+     */
+    public Cursor fetchAllContacts() {
+
+    	Cursor mCursor =
+    		mDb.query(TABLE_CONTACTS, new String[] {CONTACT_ROWID, CONTACT_ID,
+                CONTACT_CUSTOMER_ID, CONTACT_UPDATED_AT}, null, null, null, null, null);
+        return checkCursor(mCursor);    	
+    }
     
     /**
      * Return a Cursor positioned at the customer that matches the given rowId
      * 
      * @param rowId id of customer to retrieve
-     * @return Cursor positioned to matching note, if found
-     * @throws SQLException if note could not be found/retrieved
+     * @return Cursor positioned to matching setting, if found
+     * @throws SQLException if settomg could not be found/retrieved
      */
     public Cursor fetchContactByContactId(long contactId) throws SQLException {
 
@@ -330,8 +401,8 @@ public class BBContactsDBAdapter {
      * Return a Cursor positioned at the setting that matches the given rowId
      * 
      * @param rowId id of customer to retrieve
-     * @return Cursor positioned to matching note, if found
-     * @throws SQLException if note could not be found/retrieved
+     * @return Cursor positioned to matching setting, if found
+     * @throws SQLException if setting could not be found/retrieved
      */
     public Cursor fetchSetting(long rowId) throws SQLException {
 
@@ -351,6 +422,50 @@ public class BBContactsDBAdapter {
         mCursor.moveToFirst();        
         return mCursor;
 	}
+	
+    /**
+     * Return a Cursor positioned at the preference that matches the given rowId
+     * 
+     * @param rowId id of preference to retrieve
+     * @return Cursor positioned to matching preference, if found
+     * @throws SQLException if preference could not be found/retrieved
+     */
+    public Cursor fetchPreference(long rowId) throws SQLException {
+
+        Cursor mCursor =
+            mDb.query(true, TABLE_PREFERENCES, new String[] {PREFERENCES_ROWID,
+                    PREFERENCES_FIELD, PREFERENCES_TYPE, PREFERENCES_SEQUENCE}, PREFERENCES_ROWID + "=" + rowId, null,
+                    null, null, null, null);
+        return checkCursor(mCursor);
+    }
+
+    /**
+     * Return a Cursor over the list of all preferences in the database
+     * 
+     * @return Cursor over all preferences
+     */
+    public Cursor fetchAllPreferences() {
+
+    	Cursor mCursor =
+    		mDb.query(TABLE_PREFERENCES, new String[] {PREFERENCES_ROWID,
+                    PREFERENCES_FIELD, PREFERENCES_TYPE, PREFERENCES_SEQUENCE}, null, null, null, null, null);
+    	
+        return checkCursor(mCursor);
+    }
+    
+    /**
+     * Return a Cursor over the list of all preferences in the database
+     * 
+     * @return Cursor over all preferences
+     */
+    public Cursor fetchPreferencesByField(String field) {
+
+    	Cursor mCursor =
+    		mDb.query(TABLE_PREFERENCES, new String[] {PREFERENCES_ROWID,
+                    PREFERENCES_FIELD, PREFERENCES_TYPE, PREFERENCES_SEQUENCE}, PREFERENCES_FIELD + "=" + field, null, null, null, null);
+    	
+        return checkCursor(mCursor);
+    }
 
     /**
      * Update the customer using the details provided. The customer to be updated is
