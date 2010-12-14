@@ -349,7 +349,30 @@ public class ContactActivity extends ListActivity {
 	}
 	
 	private String getEmail(String id, int type) {
-		ArrayList<Email> emails = getEmails(id, type);
+		
+		// contact field selections, get cursor of email types ordered by sequence
+		Cursor eCur = mDbHelper.fetchPreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
+
+		ArrayList<Integer> types = new ArrayList<Integer>();
+		if (eCur == null) {
+			return "";
+		}
+		else {
+			try {
+				startManagingCursor(eCur); 
+				if (eCur.moveToFirst()) {
+					do {
+						types.add(new Integer(
+							eCur.getInt(eCur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE))));
+					} while (eCur.moveToNext());
+				}
+			}
+			finally {
+				eCur.close();
+			}
+		}
+		
+		ArrayList<Email> emails = getEmails(id, types);
 		
 		// if no phones return empty
 		if (emails.size() == 0) {
@@ -359,19 +382,25 @@ public class ContactActivity extends ListActivity {
 		return emails.get(0).getAddress();		
 	}
 	
-	private ArrayList<Email> getEmails(String id, int type) {
+	private ArrayList<Email> getEmails(String id, ArrayList<Integer> types) {
 		ArrayList<Email> emails = new ArrayList<Email>();
+		
+		// create (1, 3) clause
+		String inStr = types.toString();
+		// now replace the square brackets with round ones
+		inStr.replace('[', '(').replace(']', ')');
+		
 		Cursor emailCur = managedQuery( 
 				ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
 				null,
 				ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ? AND " +
-				ContactsContract.CommonDataKinds.Email.TYPE + " = ?", 
-				new String[]{id, Integer.toString(type)}, 
+				ContactsContract.CommonDataKinds.Email.TYPE + " IN ?", 
+				new String[]{id, inStr}, 
 				null); 
 		if (emailCur.moveToNext()) {
 			String address = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-			//String type = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
- 			emails.add(new Email(address, Integer.toString(type)));
+			String emailType = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+ 			emails.add(new Email(address, emailType));
 		} 
 		emailCur.close();
 		return emails;

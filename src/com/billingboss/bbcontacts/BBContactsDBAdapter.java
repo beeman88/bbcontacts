@@ -63,10 +63,10 @@ public class BBContactsDBAdapter {
     public static final String PREFERENCES_TYPE = "type";    
     public static final String PREFERENCES_SEQUENCE = "sequence"; 
     
-    public static final String FIELD_EMAIL = "1";
-    public static final String FIELD_ADDRESS = "2";
-    public static final String FIELD_ORGANIZATION = "3";
-    public static final String FIELD_PHONE = "4";    
+    public static final int FIELD_EMAIL = 1;
+    public static final int FIELD_ADDRESS = 2;
+    public static final int FIELD_ORGANIZATION = 3;
+    public static final int FIELD_PHONE = 4;    
     
     private static final int DATABASE_VERSION = 1;	
 
@@ -168,14 +168,6 @@ public class BBContactsDBAdapter {
      * @throws IOException 
      */
     public long createCustomer(String name, String bb_id){
-        /* File file = mCtx.getDatabasePath(DATABASE_NAME);
-        try {
-			Log.d(TAG, file.getCanonicalPath());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}  */  	
-    	
         ContentValues initialValues = new ContentValues();
         initialValues.put(CUSTOMER_NAME, name);
         initialValues.put(CUSTOMER_BB_ID, bb_id);
@@ -308,7 +300,9 @@ public class BBContactsDBAdapter {
      */
     public boolean deletePreferencesByField(int field) {
 
-        return mDb.delete(TABLE_PREFERENCES, PREFERENCES_FIELD + "=" + field, null) > 0;
+        return mDb.delete(TABLE_PREFERENCES, 
+        		PREFERENCES_FIELD + "=" + Integer.toString(field), 
+        		null) > 0;
     }
     
     /**
@@ -454,15 +448,20 @@ public class BBContactsDBAdapter {
     }
     
     /**
-     * Return a Cursor over the list of all preferences in the database
+     * Return a Cursor over the list of preferences by field (email, phone ...)
      * 
-     * @return Cursor over all preferences
+     * @return Cursor over preferences by field 
      */
-    public Cursor fetchPreferencesByField(String field) {
+    public Cursor fetchPreferencesByField(int field) {
 
     	Cursor mCursor =
-    		mDb.query(TABLE_PREFERENCES, new String[] {PREFERENCES_ROWID,
-                    PREFERENCES_FIELD, PREFERENCES_TYPE, PREFERENCES_SEQUENCE}, PREFERENCES_FIELD + "=" + field, null, null, null, null);
+    		mDb.query(TABLE_PREFERENCES, 
+    				new String[] {PREFERENCES_ROWID, PREFERENCES_FIELD, PREFERENCES_TYPE, PREFERENCES_SEQUENCE}, 
+                    PREFERENCES_FIELD + "=" + Integer.toString(field), 
+                    null, 
+                    null, 
+                    null, 
+                    "SEQUENCE ASC");
     	
         return checkCursor(mCursor);
     }
