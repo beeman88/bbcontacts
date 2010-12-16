@@ -37,7 +37,8 @@ public class ContactActivity extends ListActivity {
 
 	private static final String TAG = "ContactActivity";
 	private BBContactsDBAdapter mDbHelper;
-	private ArrayList<ContactRow> contactList;
+	private static ArrayList<ContactRow> contactList;
+	private static ArrayList<Integer> types;
 	private Context ctx;
 	private static final String CSV_FILENAME = "contacts.csv";	
 
@@ -75,6 +76,8 @@ public class ContactActivity extends ListActivity {
 		mDbHelper = new BBContactsDBAdapter(this);
 		mDbHelper.open();
 		fillData();
+		// use contactList to display on the screen
+		setScreenList();        
 	}
 
 	// reads customers from the phone db on initial call and if screen is rotated
@@ -112,7 +115,7 @@ public class ContactActivity extends ListActivity {
 			}
 			
 			// email
-			email = getEmail(id, ContactsContract.CommonDataKinds.Email.TYPE_WORK);
+			email = getEmail(id);
 			
 			// address
 			Address address = getAddress(id, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK);
@@ -127,10 +130,6 @@ public class ContactActivity extends ListActivity {
 			contactList.add(new ContactRow(id, org, name, address, website, phoneCompany, email, phoneContact));
 		}
 		mCur.close();
-
-
-		// use contactList to display on the screen
-		setScreenList();        
 	}
 
 	private void setScreenList() {
@@ -139,12 +138,12 @@ public class ContactActivity extends ListActivity {
 				R.layout.contacts_row, 
 				new String[] {ContactRow.KEY_ORGANIZATION, 
 			ContactRow.KEY_DISPLAY_NAME,
-			ContactRow.KEY_EMAIL,
-			ContactRow.KEY_CONTACT_PHONE}, 
-			new int[] {R.id.org, R.id.display_name});     
+			ContactRow.KEY_EMAIL
+			}, 
+			new int[] {R.id.org, R.id.display_name, R.id.email});     
 
 		this.setListAdapter(adapter);        
-		Toast.makeText(this, contactList.size() + "", Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, contactList.size() + "", Toast.LENGTH_LONG).show();
 	}
 
 	private void saveContacts() {
@@ -191,7 +190,7 @@ public class ContactActivity extends ListActivity {
 			ListView list = (ListView) findViewById(android.R.id.list);
 			//SparseBooleanArray positions = list.getCheckedItemPositions();
 
-			for (int i = 0; i < contactList.size() - 1; i++) {
+			for (int i = 0; i < contactList.size(); i++) {
 				// skip not checked rows
 				View row = (View) list.getChildAt(i);
 				CheckedTextView chkBox = (CheckedTextView) row.findViewById(R.id.row_checkbox);
@@ -225,7 +224,7 @@ public class ContactActivity extends ListActivity {
 				writer.append("(604) 207-FAXX");
 				writer.append(',');
 				writer.append(contactRow.first_name.trim());
-				writer.append(',');	
+ 				writer.append(',');	
 				writer.append(contactRow.last_name.trim());
 				writer.append(',');
 				writer.append(contactRow.email.trim());
@@ -348,27 +347,12 @@ public class ContactActivity extends ListActivity {
 		return phones;
 	}
 	
-	private String getEmail(String id, int type) {
+	private String getEmail(String id) {
 		
-		// contact field selections, get cursor of email types ordered by sequence
-		Cursor eCur = mDbHelper.fetchPreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
-
-		ArrayList<Integer> types = new ArrayList<Integer>();
-		if (eCur == null) {
-			return "";
-		}
-		else {
-			try {
-				startManagingCursor(eCur); 
-				if (eCur.moveToFirst()) {
-					do {
-						types.add(new Integer(
-							eCur.getInt(eCur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE))));
-					} while (eCur.moveToNext());
-				}
-			}
-			finally {
-				eCur.close();
+		if (types == null) {
+			getEmailTypes();
+			if (types == null) {
+				return "";
 			}
 		}
 		
@@ -381,6 +365,28 @@ public class ContactActivity extends ListActivity {
 		
 		return emails.get(0).getAddress();		
 	}
+
+	private void getEmailTypes() {
+		// contact field selections, get cursor of email types ordered by sequence
+		Cursor eCur = mDbHelper.fetchPreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
+		if (eCur == null) {
+			return;
+		}
+
+		types = new ArrayList<Integer>();
+		try {
+			startManagingCursor(eCur); 
+			if (eCur.moveToFirst()) {
+				do {
+					types.add(new Integer(
+							eCur.getInt(eCur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE))));
+				} while (eCur.moveToNext());
+			}
+		}
+		finally {
+			eCur.close();
+		}
+	}
 	
 	private ArrayList<Email> getEmails(String id, ArrayList<Integer> types) {
 		ArrayList<Email> emails = new ArrayList<Email>();
@@ -388,14 +394,14 @@ public class ContactActivity extends ListActivity {
 		// create (1, 3) clause
 		String inStr = types.toString();
 		// now replace the square brackets with round ones
-		inStr.replace('[', '(').replace(']', ')');
+		inStr = inStr.replace('[', '(').replace(']', ')');
 		
 		Cursor emailCur = managedQuery( 
 				ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
 				null,
 				ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ? AND " +
-				ContactsContract.CommonDataKinds.Email.TYPE + " IN ?", 
-				new String[]{id, inStr}, 
+				ContactsContract.CommonDataKinds.Email.TYPE + " IN " + inStr, 
+				new String[]{id}, 
 				null); 
 		if (emailCur.moveToNext()) {
 			String address = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
@@ -409,9 +415,9 @@ public class ContactActivity extends ListActivity {
 	private Address getAddress(String id, int type) {
 		ArrayList<Address> addresses = getAddresses(id, type);
 		
-		// if no addresses return null
+		// if no addresses return blank address
 		if (addresses.size() == 0) {
-			return null;
+			return new Address("", "", "", "", "", "", "");
 		}
 		
 		return addresses.get(0);		

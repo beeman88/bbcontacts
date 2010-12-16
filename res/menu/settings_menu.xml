@@ -4,5 +4,7 @@
           android:title="@string/menu_customers" 
           android:icon="@drawable/android"/>
     <item android:id="@+id/database"
-          android:title="@string/menu_database" />            
+          android:title="@string/menu_database" />
+    <item android:id="@+id/contacts"
+          android:title="@string/menu_contacts" />
 </menu>

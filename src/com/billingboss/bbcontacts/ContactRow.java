@@ -91,7 +91,10 @@ public class ContactRow extends HashMap<String, String> {
 	
 	private void splitName() {
 		try {
-		
+			// make sure first and last name are not null
+			this.first_name = "";
+			this.last_name = "";
+			
 			String[] names = this.display_name.split(" ");
 			if (names.length == 0) {
 				return;

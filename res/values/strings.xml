@@ -4,7 +4,7 @@
     <string name="no_contacts">No Contacts Yet</string>
     <string name="app_name">BillingBoss Contacts</string>
 	<string name="customer_activity">BillingBoss Customers</string>
-    <string name="contact_activity">Contact Activity</string>
+    <string name="contact_activity">Contacts</string>
     <string name="settings_activity">Settings</string>    
     <string name="database_activity">Database</string>    
     <string name="menu_customers">Customers</string>
