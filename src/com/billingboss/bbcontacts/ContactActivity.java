@@ -33,7 +33,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ContactActivity extends ListActivity {
+public class ContactActivity extends ListActivity implements OnSettingsUpdatedListener{
 
 	private static final String TAG = "ContactActivity";
 	private BBContactsDBAdapter mDbHelper;
@@ -75,6 +75,9 @@ public class ContactActivity extends ListActivity {
 
 		mDbHelper = new BBContactsDBAdapter(this);
 		mDbHelper.open();
+		
+		SettingsActivity.setOnSettingsUpdatedListener(this);
+		
 		fillData();
 		// use contactList to display on the screen
 		setScreenList();        
@@ -337,11 +340,15 @@ public class ContactActivity extends ListActivity {
 				ContactsContract.CommonDataKinds.Phone.TYPE + " = ?", 
 				new String[]{id, Integer.toString(type)}, 
 				null);
-		if (pCur.moveToNext()) {
-			phones.add(new Phone(
- 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)),
- 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))
- 			));		} 
+		
+		if (pCur.moveToFirst()) {
+			do {
+				phones.add(new Phone(
+	 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)),
+	 					pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE))));
+			} while (pCur.moveToNext());
+		}
+		
 		pCur.close();
 		
 		return phones;
@@ -403,11 +410,14 @@ public class ContactActivity extends ListActivity {
 				ContactsContract.CommonDataKinds.Email.TYPE + " IN " + inStr, 
 				new String[]{id}, 
 				null); 
-		if (emailCur.moveToNext()) {
-			String address = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
-			String emailType = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
- 			emails.add(new Email(address, emailType));
-		} 
+		
+ 		if (emailCur.moveToFirst()) {
+			do {
+				String address = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+				String emailType = emailCur.getString(emailCur.getColumnIndex(ContactsContract.CommonDataKinds.Email.TYPE));
+	 			emails.add(new Email(address, emailType));
+			} while (emailCur.moveToNext());
+		} 		
 		emailCur.close();
 		return emails;
 	}
@@ -433,17 +443,20 @@ public class ContactActivity extends ListActivity {
 			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE,
 			Integer.toString(type)}; 
 
-	Cursor addrCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null); 
-	while(addrCur.moveToNext()) {
-		String poBox = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POBOX));
-		String street = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));
-		String city = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));
-		String state = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));
-		String postalCode = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));
-		String country = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
-		//String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
-		addrList.add(new Address(poBox, street, city, state, postalCode, country, Integer.toString(type)));
-	} 
+	Cursor addrCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null);
+	
+		if (addrCur.moveToFirst()) {
+			do {
+				String poBox = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POBOX));
+				String street = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.STREET));
+				String city = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.CITY));
+				String state = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));
+				String postalCode = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));
+				String country = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
+				//String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
+				addrList.add(new Address(poBox, street, city, state, postalCode, country, Integer.toString(type)));
+			} while (addrCur.moveToNext());
+		} 		
 	addrCur.close();
 	return(addrList);
 	}
@@ -470,13 +483,14 @@ public class ContactActivity extends ListActivity {
  		
  		Cursor orgCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null);
  
- 		if (orgCur.moveToNext()) { 
- 			String orgName = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DATA));
- 			String title = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
- 			//String type = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TYPE));
- 			orgs.add(new Organization(orgName, title, Integer.toString(type)));
- 			
- 		} 
+ 		if (orgCur.moveToFirst()) {
+			do {
+	 			String orgName = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.DATA));
+	 			String title = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TITLE));
+	 			//String type = orgCur.getString(orgCur.getColumnIndex(ContactsContract.CommonDataKinds.Organization.TYPE));
+	 			orgs.add(new Organization(orgName, title, Integer.toString(type)));
+			} while (orgCur.moveToNext());
+		} 		
  		orgCur.close();
  		return(orgs);
  	}
@@ -507,12 +521,15 @@ public class ContactActivity extends ListActivity {
 				null,
 				where,
 				whereParameters,
-				null); 
-		if (websiteCur.moveToNext()) {
-			String url = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
-			//String type = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE));
- 			websites.add(new Website(url, Integer.toString(type)));
-		} 
+				null);
+		
+ 		if (websiteCur.moveToFirst()) {
+			do {
+				String url = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.URL));
+				//String type = websiteCur.getString(websiteCur.getColumnIndex(ContactsContract.CommonDataKinds.Website.TYPE));
+	 			websites.add(new Website(url, Integer.toString(type)));
+			} while (websiteCur.moveToNext());
+		} 		
 		websiteCur.close();
 		return websites;
  	}
@@ -539,6 +556,12 @@ public class ContactActivity extends ListActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void onSettingsUpdated() {
+		// reset the class variables that store email types and the contact data
+		contactList = null;
+		types = null;
+	}
 }
 
 

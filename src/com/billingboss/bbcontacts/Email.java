@@ -26,10 +26,10 @@ public class Email {
 	// class variable
 	// 1 Home, 2 Work, 3 Other, 4 Mobile	
 	static public enum emailTypes {
-		HOME(1),
-		WORK(2),
-		OTHER(3),
-		MOBILE(4);
+		Home(1),
+		Work(2),
+		Other(3),
+		Mobile(4);
 
 		private final int index;
 
@@ -46,13 +46,13 @@ public class Email {
 	static public String getNameByIndex(int index) {
 		switch(index) {
 		case 1:
-			return emailTypes.HOME.name();
+			return emailTypes.Home.name();
 		case 2:
-			return emailTypes.WORK.name();
+			return emailTypes.Work.name();
 		case 3:
-			return emailTypes.OTHER.name();
+			return emailTypes.Other.name();
 		case 4:
-			return emailTypes.MOBILE.name();
+			return emailTypes.Mobile.name();
 		default:
 			return "";
 		}
@@ -61,16 +61,16 @@ public class Email {
 	// class method
 	static public int getIndexByName(String name) {
 
-		if (name.equals(emailTypes.HOME.name())) {
+		if (name.equals(emailTypes.Home.name())) {
 			return 1;
 		}
-		else if	(name.equals(emailTypes.WORK.name())) {
+		else if	(name.equals(emailTypes.Work.name())) {
 			return 2;
 		}
-		else if	(name.equals(emailTypes.OTHER.name())) {
+		else if	(name.equals(emailTypes.Other.name())) {
 			return 3;
 		}
-		else if	(name.equals(emailTypes.MOBILE.name())) {
+		else if	(name.equals(emailTypes.Mobile.name())) {
 			return 4;
 		}
 		else {

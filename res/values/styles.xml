@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
+	<!--  themes -->
+	<style name="DefaultTheme" parent="android:Theme.Light">
+		<item name="android:windowNoTitle">true</item>
+		<!-- sky blue #87CEFA -->
+		<!-- light green #E2F7DF -->
+		<item name="android:background">@color/background</item>
+	</style>
+
+	<!--  line -->
     <style name="settings_line" >
         <item name="android:layout_marginTop">5dip</item>   
         <item name="android:layout_marginBottom">5dip</item>        
-        <item name="android:layout_height">2dip</item>        
+        <item name="android:layout_height">1dip</item>        
         <item name="android:layout_width">fill_parent</item>        
-        <item name="android:background">#C0C0C0</item>        
+        <item name="android:background">@color/settings_line</item>        
     </style>
+    
+    <!-- layout -->
     <style name="settings_linearlayout" >
         <item name="android:orientation">vertical</item>    
         <item name="android:layout_height">fill_parent</item>        
@@ -16,24 +27,53 @@
         <item name="android:layout_marginLeft">5dip</item>        
         <item name="android:layout_marginRight">5dip</item>        
     </style>
+    
+    <!-- listview -->
     <style name="settings_list" parent="@android:style/Widget.ListView">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">#FFFFFF</item>        
+        <item name="android:background">@color/listview_background</item>        
     </style>
-    <style name="base_TextView" parent="@android:style/Widget.TextView">
-        <item name="android:layout_width">fill_parent</item>
+    <style name="contacts_list" parent="@android:style/Widget.ListView">
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">18sp</item>                        
+        <item name="android:divider">@color/listview_divider</item>
+        <item name="android:dividerHeight">1dip</item>        
     </style>
+    
+    <!--  textview -->
+    <style name="base_TextView" parent="@android:style/Widget.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="large_TextView" parent="base_TextView">
+        <item name="android:textSize">20sp</item>                        
+    </style>
+    <style name="medium_TextView" parent="base_TextView">
+        <item name="android:textSize">16sp</item>                        
+    </style>
+    <style name="small_TextView" parent="base_TextView">
+        <item name="android:textSize">12sp</item>                        
+    </style>
+    <style name="settings_TextView" parent="base_TextView">
+        <item name="android:paddingTop">2dip</item>
+        <item name="android:paddingBottom">3dip</item>
+        <item name="android:textColor">@color/textview_text</item>
+		<item name="android:textSize">18sp</item> 
+		<item name="android:background">@color/textview_background</item>       
+    </style>
+    <style name="settings_list_TextView" parent="medium_TextView">
+		<item name="android:background">@color/listview_background</item>
+		<item name="android:textColor">@color/textview_text</item>
+		<item name="android:layout_width">fill_parent</item>                        
+    </style>
+
+	<!-- edittext -->    
     <style name="base_EditText" parent="@android:style/Widget.EditText">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">18sp</item>                        
     </style>
-    <style name="settings_textView" parent="base_TextView">
-        <item name="android:paddingTop">2dip</item>
-        <item name="android:paddingBottom">3dip</item>
-        <item name="android:textColor">#000000</item>
-    </style>
+    
+    
 </resources>

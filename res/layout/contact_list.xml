@@ -16,14 +16,12 @@
 		        android:layout_height="wrap_content" />
 	</RelativeLayout>        
 	<ListView android:id="@android:id/list"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/contacts_list"
 	        android:layout_alignParentTop="true"
 	        android:choiceMode="multipleChoice"
 	        android:layout_above="@+id/child_layout"/>
 	<TextView android:id="@android:id/empty"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
+			style="@style/medium_TextView"
 	        android:text="@string/no_contacts"
 	        android:layout_above="@+id/child_layout"/> 
 </RelativeLayout>

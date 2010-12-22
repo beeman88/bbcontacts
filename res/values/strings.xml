@@ -21,12 +21,13 @@
 	<string name="settings_bb_password">Password</string>
 	<string name="enter_username">Enter username...</string>		
 	<string name="enter_password">Enter password...</string>
-	<string name="contact_email">Contact Email</string>		
+	<string name="contact_email">Contact Email Type</string>		
 	<string name="selection">Selection</string>	
 	<string name="order">Order</string>	
-	<string name="settings_err_not_saved">%s not saved in settings</string>
+	<string name="settings_err_not_saved">billingboss credentials not saved in settings</string>
+	<string name="settings_err_email_not_saved">email type not saved in settings</string>
 	<string name="settings_err_not_created">username and password are not created in settings</string>
-	<string name="settings_saved">%s saved in settings</string>
+	<string name="settings_saved">settings saved</string>
 	<string name="customer_err_null_response">no response received from billingboss</string>
 	<string name="customer_err_not_saved">%s was not saved in customers</string>	
 	<string name="customers_err_not_created">no customers are created</string>
