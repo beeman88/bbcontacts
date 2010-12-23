@@ -1,5 +1,7 @@
 package com.billingboss.bbcontacts;
 
+import java.util.ArrayList;
+
 public class Email {
 	private String address;
 	private String type;
@@ -77,4 +79,14 @@ public class Email {
 			return 0;
 		}
 	}
+	
+	static public ArrayList<String> typeToArrayList() {
+		ArrayList<String> list = new ArrayList<String>() ;
+		list.add(emailTypes.Home.name());
+		list.add(emailTypes.Work.name());
+		list.add(emailTypes.Other.name());
+		list.add(emailTypes.Mobile.name());		
+		return list;
+	}
+	
 }

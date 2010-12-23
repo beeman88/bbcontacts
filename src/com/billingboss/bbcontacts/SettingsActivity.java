@@ -30,8 +30,15 @@ public class SettingsActivity extends Activity {
 	private Context ctx;
 	private static OnSettingsUpdatedListener onSettingsUpdatedListener = null;
 
-	private static ArrayList<String> order;
-	private static ArrayList<String> selection;	
+	private static ArrayList<String> emailOrder;
+	private static ArrayList<String> emailSelection;	
+	private static ArrayList<String> addressOrder;
+	private static ArrayList<String> addressSelection;	
+	
+	private enum ContactAddress {
+		Email,
+		Address
+	}
 
 	public void onCreate(Bundle savedInstanceState) { 
 		super.onCreate(savedInstanceState);	
@@ -45,7 +52,9 @@ public class SettingsActivity extends Activity {
 			public void onClick(View view) {
 				// all setting update, pop up message
 				if (setBBCredentials() &&
-					setEmailSelections()) {
+					setSelections(emailOrder, 
+							BBContactsDBAdapter.FIELD_EMAIL,
+							ContactAddress.Email)) {
 						ErrorHandler.LogToastError(ctx, TAG, 
 								getString(R.string.settings_saved));    				 
 					}
@@ -59,7 +68,11 @@ public class SettingsActivity extends Activity {
 		fillData();
 		
 		setUIBBCredentials();
-		setUIEmailSelections();		
+		// set UI Email lists
+		setUISelections(R.id.list_1,
+						R.id.list_2,
+						emailOrder,
+						emailSelection);
 	}
 
 	@Override
@@ -108,69 +121,115 @@ public class SettingsActivity extends Activity {
 		}
 		
 		// arraylists defined, called because of rotate
-		if (order == null && selection == null) {
-			order = new ArrayList<String>();
-			selection = new ArrayList<String>();
-			getEmailSelections();
+		if (emailOrder == null && emailSelection == null) {
+			emailOrder = new ArrayList<String>();
+			emailSelection = new ArrayList<String>();
+			
+			// populate email listviews
+			getSelections(emailOrder, 
+					emailSelection, 
+					Email.typeToArrayList(), 
+					BBContactsDBAdapter.FIELD_EMAIL,
+					Email.emailTypes.Work.name(),
+					ContactAddress.Email);
 		}
+		
+/*		// arraylists defined, called because of rotate
+		if (addressOrder == null && addressSelection == null) {
+			addressOrder = new ArrayList<String>();
+			addressSelection = new ArrayList<String>();
+			getAddressSelections();
+		}*/
 		
 		return;
 	}
 
-	private void resetEmailSelections() {
-		selection.clear();
-		selection.add(Email.emailTypes.Work.name());
-		selection.add(Email.emailTypes.Home.name());
-		selection.add(Email.emailTypes.Other.name());
-		selection.add(Email.emailTypes.Mobile.name());
+	private void resetSelectionList(ArrayList<String> selections, ArrayList<String> types) {
+		selections.clear();
+		for (String type : types) {
+			selections.add(type);
+		}
 	}
 
-	private boolean setEmailSelections() {
+	private boolean setSelections(ArrayList<String> order, 	// backing arraylist for left side list
+			int preferenceField, 							// what kind of field, email, address, ..
+			ContactAddress className						// class
+		) {
 		// remove current selections
-		mDbHelper.deletePreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
+		mDbHelper.deletePreferencesByField(preferenceField);
 		// create new preferences
 		for (int i = 0; i < order.size(); i++) {
-			// use the order array list value to get the index 
+			// use the emailOrder array list value to get the index 
 			if (mDbHelper.createPreference(
-					BBContactsDBAdapter.FIELD_EMAIL, 
-					Email.getIndexByName(order.get(i)),
+					preferenceField,
+					getIndexByName(className, order.get(i)),
 					i) < 0) {
 				ErrorHandler.LogToastError(ctx, TAG, 
-						getString(R.string.settings_err_email_not_saved));
+						String.format(getString(R.string.settings_err_email_not_saved), className));
 				return false;
 			}
 		}
 		return true;
-	}
-
-	private void getEmailSelections() {
-		// reset the arraylists backing the email listview
-		// order cleared, selections has all choices
+	}	
+	
+	// generalized method to populate list from cursor for address, email, phone, website, org type
+	private void getSelections(ArrayList<String> order, // backing arraylist for left side list 
+			ArrayList<String> selection,                // backing arraylist for right side list
+			ArrayList<String> list,						// arraylist of all choices
+			int preferenceField,						// what kind of field, email, address, ..
+			String defaultType,							// initial type if cursor empty
+			ContactAddress className					// class 
+			) {
+		// reset the arraylists backing the listview
+		// order cleared, selection has all choices
 		order.clear();
-		resetEmailSelections();
+		resetSelectionList(selection, list);
 
-		// contact field selections, get cursor of email types ordered by sequence
-		Cursor eCur = mDbHelper.fetchPreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
+		// contact field selections, get cursor of types ordered by sequence
+		Cursor cur = mDbHelper.fetchPreferencesByField(preferenceField);
 
-		if (eCur == null) {
-			// add default of work to order and remove from selection
-			order.add(Email.emailTypes.Work.name());
-			selection.remove(Email.emailTypes.Work.name());
+		if (cur == null) {
+			// add default of work to emailOrder and remove from emailSelection
+			order.add(defaultType);
+			selection.remove(defaultType);
 		}
 		else {
 			try {
-				startManagingCursor(eCur); 
-				if (eCur.moveToFirst()) {
+				startManagingCursor(cur); 
+				if (cur.moveToFirst()) {
 					do {
-						int inx = eCur.getInt(eCur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE));
-						order.add(Email.getNameByIndex(inx));
-						selection.remove(Email.getNameByIndex(inx));
-					} while (eCur.moveToNext());
+						int inx = cur.getInt(cur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE));
+						String typeName = getNameByIndex(className, inx);
+						order.add(typeName);
+						selection.remove(typeName);
+					} while (cur.moveToNext());
 				}
 			}
 			finally {
-				eCur.close();
+				cur.close();
 			}
+		}
+	}
+	
+	private String getNameByIndex(ContactAddress className, int inx) {
+		switch (className) {
+		case Email: 
+			return Email.getNameByIndex(inx);
+		case Address: 
+			return Address.getNameByIndex(inx);
+		default:
+			return "";
+		}
+	}
+	
+	private int getIndexByName(ContactAddress className, String name) {
+		switch (className) {
+		case Email: 
+			return Email.getIndexByName(name);
+		case Address: 
+			return Address.getIndexByName(name);
+		default:
+			return 0;
 		}
 	}
 
@@ -221,20 +280,23 @@ public class SettingsActivity extends Activity {
 		EditText txtPassword = (EditText) findViewById(R.id.password);
 		txtPassword.setText(password);
 	}
-
-	private void setUIEmailSelections() {
-		final ListView list1 = (ListView) findViewById(R.id.list_1);
+	
+	private void setUISelections(int leftId, 
+								 int rightId,
+								 final ArrayList<String> order,
+								 final ArrayList<String> selection) {
+		final ListView list1 = (ListView) findViewById(leftId);
 		list1.setAdapter(new ArrayAdapter<String>(this,
 				R.layout.settings_list, order));
 
-		final ListView list2 = (ListView) findViewById(R.id.list_2);
+		final ListView list2 = (ListView) findViewById(rightId);
 		list2.setAdapter(new ArrayAdapter<String>(this,
 				R.layout.settings_list, selection));
 
 		list1.setOnItemClickListener( new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// remove list item from order list and add to selection list
+				// remove list item from emailOrder list and add to emailSelection list
 				moveListItem(arg1, list1, list2, order, selection);
 			}
 		});
@@ -242,11 +304,11 @@ public class SettingsActivity extends Activity {
 		list2.setOnItemClickListener( new OnItemClickListener() {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
-				// remove list item from selection list and add to order list				
+				// remove list item from emailSelection list and add to emailOrder list				
 				moveListItem(arg1, list2, list1, selection, order);
 			}
 		});
-	}
+	}	
 
 	private void moveListItem (View arg1, 
 			ListView lvFrom, 

@@ -96,6 +96,30 @@
 		    	android:id="@+id/line2" 
 				style="@style/settings_line" 
 				android:layout_below="@+id/linearlayout_email"/>
+			<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:id="@+id/linearlayout_address"
+			    android:layout_width="fill_parent"
+			    android:layout_height="100dip"
+			    android:orientation="horizontal"
+			    android:layout_below="@+id/linearlayout_email">
+				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		            android:id="@+id/linear2"
+		            style="@style/settings_linearlayout">
+		            <ListView
+		                android:id="@+id/list_3"
+						style="@style/settings_list" />
+		    	</LinearLayout>
+		    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+						style="@style/settings_linearlayout" >
+		            <ListView
+		                android:id="@+id/list_3"
+						style="@style/settings_list"/>
+		        </LinearLayout>
+		    </LinearLayout>
+	    	<View 
+		    	android:id="@+id/line3" 
+				style="@style/settings_line" 
+				android:layout_below="@+id/linearlayout_address"/>
     	</RelativeLayout>	    
     </ScrollView>
 </RelativeLayout>
