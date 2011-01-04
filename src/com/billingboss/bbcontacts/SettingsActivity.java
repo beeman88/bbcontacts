@@ -54,7 +54,10 @@ public class SettingsActivity extends Activity {
 				if (setBBCredentials() &&
 					setSelections(emailOrder, 
 							BBContactsDBAdapter.FIELD_EMAIL,
-							ContactAddress.Email)) {
+							ContactAddress.Email) &&
+					setSelections(addressOrder, 
+							BBContactsDBAdapter.FIELD_ADDRESS,
+							ContactAddress.Address)){
 						ErrorHandler.LogToastError(ctx, TAG, 
 								getString(R.string.settings_saved));    				 
 					}
@@ -69,10 +72,16 @@ public class SettingsActivity extends Activity {
 		
 		setUIBBCredentials();
 		// set UI Email lists
-		setUISelections(R.id.list_1,
-						R.id.list_2,
+		setUISelections(R.id.email_list_1,
+						R.id.email_list_2,
 						emailOrder,
 						emailSelection);
+		
+		// set UI Address lists		
+		setUISelections(R.id.address_list_1,
+				R.id.address_list_2,
+				addressOrder,
+				addressSelection);
 	}
 
 	@Override
@@ -134,12 +143,17 @@ public class SettingsActivity extends Activity {
 					ContactAddress.Email);
 		}
 		
-/*		// arraylists defined, called because of rotate
+		// arraylists defined, called because of rotate
 		if (addressOrder == null && addressSelection == null) {
 			addressOrder = new ArrayList<String>();
 			addressSelection = new ArrayList<String>();
-			getAddressSelections();
-		}*/
+			getSelections(addressOrder,
+					addressSelection,
+					Address.typeToArrayList(),
+					BBContactsDBAdapter.FIELD_ADDRESS,
+					Address.addressTypes.Work.name(),
+					ContactAddress.Address);
+		}
 		
 		return;
 	}

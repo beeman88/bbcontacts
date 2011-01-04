@@ -38,7 +38,8 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 	private static final String TAG = "ContactActivity";
 	private BBContactsDBAdapter mDbHelper;
 	private static ArrayList<ContactRow> contactList;
-	private static ArrayList<Integer> types;
+	private static ArrayList<Integer> emailTypes;
+	private static ArrayList<Integer> addressTypes;	
 	private Context ctx;
 	private static final String CSV_FILENAME = "contacts.csv";	
 
@@ -120,8 +121,8 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 			// email
 			email = getEmail(id);
 			
-			// address
-			Address address = getAddress(id, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK);
+			// address ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK
+			Address address = getAddress(id);
 			
 			// organization
 			org = getOrg(id, ContactsContract.CommonDataKinds.Organization.TYPE_WORK);
@@ -356,14 +357,14 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 	
 	private String getEmail(String id) {
 		
-		if (types == null) {
-			getEmailTypes();
-			if (types == null) {
+		if (emailTypes == null) {
+			emailTypes = getTypes(BBContactsDBAdapter.FIELD_EMAIL);
+			if (emailTypes == null) {
 				return "";
 			}
 		}
 		
-		ArrayList<Email> emails = getEmails(id, types);
+		ArrayList<Email> emails = getEmails(id, emailTypes);
 		
 		// if no phones return empty
 		if (emails.size() == 0) {
@@ -373,14 +374,14 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 		return emails.get(0).getAddress();		
 	}
 
-	private void getEmailTypes() {
+	private ArrayList<Integer> getTypes(int fieldType) {
 		// contact field selections, get cursor of email types ordered by sequence
-		Cursor eCur = mDbHelper.fetchPreferencesByField(BBContactsDBAdapter.FIELD_EMAIL);
+		Cursor eCur = mDbHelper.fetchPreferencesByField(fieldType);
 		if (eCur == null) {
-			return;
+			return null;
 		}
 
-		types = new ArrayList<Integer>();
+		ArrayList<Integer> types = new ArrayList<Integer>();
 		try {
 			startManagingCursor(eCur); 
 			if (eCur.moveToFirst()) {
@@ -389,6 +390,7 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 							eCur.getInt(eCur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE))));
 				} while (eCur.moveToNext());
 			}
+			return types;			
 		}
 		finally {
 			eCur.close();
@@ -398,10 +400,7 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 	private ArrayList<Email> getEmails(String id, ArrayList<Integer> types) {
 		ArrayList<Email> emails = new ArrayList<Email>();
 		
-		// create (1, 3) clause
-		String inStr = types.toString();
-		// now replace the square brackets with round ones
-		inStr = inStr.replace('[', '(').replace(']', ')');
+		String inStr = arrayListToString(types);
 		
 		Cursor emailCur = managedQuery( 
 				ContactsContract.CommonDataKinds.Email.CONTENT_URI, 
@@ -422,8 +421,16 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 		return emails;
 	}
 	
-	private Address getAddress(String id, int type) {
-		ArrayList<Address> addresses = getAddresses(id, type);
+	private Address getAddress(String id) {
+		
+		if (addressTypes == null) {
+			addressTypes = getTypes(BBContactsDBAdapter.FIELD_ADDRESS);
+			if (addressTypes == null) {
+				return new Address("", "", "", "", "", "", "");
+			}
+		}		
+		
+		ArrayList<Address> addresses = getAddresses(id, addressTypes);
 		
 		// if no addresses return blank address
 		if (addresses.size() == 0) {
@@ -433,17 +440,19 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 		return addresses.get(0);		
 	}
 	
-	private ArrayList<Address> getAddresses(String id, int type) {
+	private ArrayList<Address> getAddresses(String id, ArrayList<Integer> types) {
 	ArrayList<Address> addrList = new ArrayList<Address>();
+	
+	String inStr = arrayListToString(types);
 
-	String where = ContactsContract.Data.CONTACT_ID + " = ? AND " + 
-				   ContactsContract.Data.MIMETYPE + " = ? AND " +
-				   ContactsContract.CommonDataKinds.StructuredPostal.TYPE + " = ?"; 
-	String[] whereParameters = new String[]{id, 
-			ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE,
-			Integer.toString(type)}; 
-
-	Cursor addrCur = managedQuery(ContactsContract.Data.CONTENT_URI, null, where, whereParameters, null);
+	Cursor addrCur = managedQuery(ContactsContract.Data.CONTENT_URI, 
+			null, 
+			ContactsContract.Data.CONTACT_ID + " = ? AND " + 
+			ContactsContract.Data.MIMETYPE + " = ? AND " +
+			ContactsContract.CommonDataKinds.StructuredPostal.TYPE  + " IN " + inStr, 
+			new String[]{id,
+				ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE}, 
+			null);
 	
 		if (addrCur.moveToFirst()) {
 			do {
@@ -453,12 +462,20 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 				String state = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.REGION));
 				String postalCode = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE));
 				String country = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY));
-				//String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
-				addrList.add(new Address(poBox, street, city, state, postalCode, country, Integer.toString(type)));
+				String type = addrCur.getString(addrCur.getColumnIndex(ContactsContract.CommonDataKinds.StructuredPostal.TYPE));
+				addrList.add(new Address(poBox, street, city, state, postalCode, country, type));
 			} while (addrCur.moveToNext());
 		} 		
 	addrCur.close();
 	return(addrList);
+	}
+
+	private String arrayListToString(ArrayList<Integer> types) {
+		// create (1, 3) clause
+		String inStr = types.toString();
+		// now replace the square brackets with round ones
+		inStr = inStr.replace('[', '(').replace(']', ')');
+		return inStr;
 	}
 	
 	private String getOrg(String id, int type) {
@@ -560,7 +577,8 @@ public class ContactActivity extends ListActivity implements OnSettingsUpdatedLi
 	public void onSettingsUpdated() {
 		// reset the class variables that store email types and the contact data
 		contactList = null;
-		types = null;
+		emailTypes = null;
+		addressTypes = null;
 	}
 }
 

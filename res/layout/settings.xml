@@ -25,102 +25,123 @@
 		    android:layout_width="fill_parent"
 		    android:layout_height="fill_parent"
 	    	android:orientation="vertical" >
-		    <TextView 
-		        android:id="@+id/text_view_billingboss"
-		        android:text="@string/billingboss"
-		        android:layout_alignParentTop="true"
-		        style="@style/large_TextView"/> 
-		    <TextView 
-		        android:id="@+id/text_view_username"
-		        android:text="@string/settings_bb_username"
-		        android:layout_below="@+id/text_view_billingboss"
-		        android:layout_marginLeft="5dip"
-		        style="@style/medium_TextView"/> 
-		    <EditText 
-		        android:id="@+id/username"  
-		        android:hint="@string/enter_username" 
-		        android:background="@android:drawable/editbox_background"
-		        android:layout_marginLeft="5dip"
-		        android:layout_below="@+id/text_view_username"
-		        style="@style/base_EditText" /> 
-		    <TextView 
-		        android:id="@+id/text_view_password"
-		        android:text="@string/settings_bb_password"
-		        android:layout_below="@+id/username"
-		        android:layout_marginLeft="5dip"
-		        style="@style/medium_TextView"/> 
-		    <EditText 
-		        android:id="@+id/password" 
-		        android:hint="@string/enter_password" 
-		        android:background="@android:drawable/editbox_background"
-		        android:password="true"
-		        android:layout_below="@+id/text_view_password"
-		        android:layout_marginLeft="5dip" 
-		        style="@style/base_EditText"/>
-		    <View 
-		    	android:id="@+id/line" 
-				style="@style/settings_line" 
-				android:layout_below="@+id/password"/>
-		    <TextView 
-		        android:id="@+id/textview_email"
-		        android:text="@string/contact_email"
-		        android:layout_below="@+id/line"
-		        style="@style/large_TextView"/> 
-			<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				android:id="@+id/linearlayout_email"
+	    	<RelativeLayout
+	    		android:id="@+id/relLayout_bbcreds"
 			    android:layout_width="fill_parent"
-			    android:layout_height="100dip"
-			    android:orientation="horizontal"
-			    android:layout_below="@+id/textview_email">
+			    android:layout_height="wrap_content"
+	    		android:orientation="vertical" >
+			    <TextView 
+			        android:id="@+id/text_view_billingboss"
+			        android:text="@string/billingboss"
+			        android:layout_alignParentTop="true"
+			        style="@style/large_TextView"/> 
+			    <TextView 
+			        android:id="@+id/text_view_username"
+			        android:text="@string/settings_bb_username"
+			        android:layout_below="@+id/text_view_billingboss"
+			        android:layout_marginLeft="5dip"
+			        style="@style/medium_TextView"/> 
+			    <EditText 
+			        android:id="@+id/username"  
+			        android:hint="@string/enter_username" 
+			        android:background="@android:drawable/editbox_background"
+			        android:layout_marginLeft="5dip"
+			        android:layout_below="@+id/text_view_username"
+			        style="@style/base_EditText" /> 
+			    <TextView 
+			        android:id="@+id/text_view_password"
+			        android:text="@string/settings_bb_password"
+			        android:layout_below="@+id/username"
+			        android:layout_marginLeft="5dip"
+			        style="@style/medium_TextView"/> 
+			    <EditText 
+			        android:id="@+id/password" 
+			        android:hint="@string/enter_password" 
+			        android:background="@android:drawable/editbox_background"
+			        android:password="true"
+			        android:layout_below="@+id/text_view_password"
+			        android:layout_marginLeft="5dip" 
+			        style="@style/base_EditText"/>
+			    <View 
+			    	android:id="@+id/bbcreds_line" 
+					style="@style/settings_line" 
+					android:layout_below="@+id/password"/>
+		    </RelativeLayout>
+			<RelativeLayout
+				android:id="@+id/relLayout_email"
+		     	android:layout_width="fill_parent"
+		    	android:layout_height="wrap_content"
+	    		android:orientation="vertical"
+	    		android:layout_below="@+id/relLayout_bbcreds">
+   			    <TextView 
+			        android:id="@+id/textview_contacts"
+			        android:text="@string/contacts"
+			        style="@style/large_TextView"/> 
+			    <TextView 
+			        android:id="@+id/textview_email"
+			        android:text="@string/contact_email"
+			        android:layout_below="@+id/textview_contacts"
+			        android:layout_marginLeft="5dip"			        
+			        style="@style/medium_TextView" /> 
 				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		            android:id="@+id/linear1"
-		            style="@style/settings_linearlayout">
-		            <!--<TextView
-		                android:text="@string/order"
-		                style="@style/medium_TextView" />
-		            --><ListView
-		                android:id="@+id/list_1"
-						style="@style/settings_list" />
-		    	</LinearLayout>
-		    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-						style="@style/settings_linearlayout" ><!--
-		                <TextView
-		                	android:text="@string/selection"
-		                	style="@style/medium_TextView" /> 
-		                --><ListView
-		                    android:id="@+id/list_2"
+					android:id="@+id/linearlayout_email"
+				    android:layout_width="fill_parent"
+				    android:layout_height="100dip"
+				    android:orientation="horizontal"
+				    android:layout_below="@+id/textview_email"
+				    >
+					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			            style="@style/settings_linearlayout">
+			            <ListView
+			                android:id="@+id/email_list_1"
+							style="@style/settings_list" />
+			    	</LinearLayout>
+			    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+							style="@style/settings_linearlayout" >
+			                <ListView
+			                    android:id="@+id/email_list_2"
+								style="@style/settings_list"/>
+			        </LinearLayout>
+			    </LinearLayout>
+		    	<View 
+			    	android:id="@+id/line2" 
+					style="@style/settings_line" 
+					android:layout_below="@+id/linearlayout_email"
+				/>
+		    </RelativeLayout>
+		    <RelativeLayout
+		     	android:layout_width="fill_parent"
+		    	android:layout_height="fill_parent"
+	    		android:orientation="vertical"
+	    		android:id="@+id/relLayout_address"
+	    		android:layout_below="@+id/relLayout_email">
+			    <TextView 
+			        android:id="@+id/textview_address"
+			        android:text="@string/contact_address"
+			        android:layout_marginLeft="5dip"
+			        style="@style/medium_TextView"/> 
+				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+					android:id="@+id/linearlayout_address"
+				    android:layout_width="fill_parent"
+				    android:layout_height="75dip"
+				    android:orientation="horizontal"
+				    android:layout_below="@+id/textview_address">
+					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			            android:id="@+id/linear2"
+			            style="@style/settings_linearlayout">
+			            <ListView
+			                android:id="@+id/address_list_1"
+							style="@style/settings_list" />
+			    	</LinearLayout>
+			    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+							style="@style/settings_linearlayout" >
+			            <ListView
+			                android:id="@+id/address_list_2"
 							style="@style/settings_list"/>
-		        </LinearLayout>
-		    </LinearLayout>
-	    	<View 
-		    	android:id="@+id/line2" 
-				style="@style/settings_line" 
-				android:layout_below="@+id/linearlayout_email"/>
-			<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				android:id="@+id/linearlayout_address"
-			    android:layout_width="fill_parent"
-			    android:layout_height="100dip"
-			    android:orientation="horizontal"
-			    android:layout_below="@+id/linearlayout_email">
-				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		            android:id="@+id/linear2"
-		            style="@style/settings_linearlayout">
-		            <ListView
-		                android:id="@+id/list_3"
-						style="@style/settings_list" />
-		    	</LinearLayout>
-		    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-						style="@style/settings_linearlayout" >
-		            <ListView
-		                android:id="@+id/list_3"
-						style="@style/settings_list"/>
-		        </LinearLayout>
-		    </LinearLayout>
-	    	<View 
-		    	android:id="@+id/line3" 
-				style="@style/settings_line" 
-				android:layout_below="@+id/linearlayout_address"/>
-    	</RelativeLayout>	    
+			        </LinearLayout>
+			    </LinearLayout>
+		    </RelativeLayout>
+	    </RelativeLayout>
     </ScrollView>
 </RelativeLayout>
 
