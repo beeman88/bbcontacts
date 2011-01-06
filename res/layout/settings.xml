@@ -106,8 +106,7 @@
 		    	<View 
 			    	android:id="@+id/line2" 
 					style="@style/settings_line" 
-					android:layout_below="@+id/linearlayout_email"
-				/>
+					android:layout_below="@+id/linearlayout_email"/>
 		    </RelativeLayout>
 		    <RelativeLayout
 		     	android:layout_width="fill_parent"
@@ -127,7 +126,6 @@
 				    android:orientation="horizontal"
 				    android:layout_below="@+id/textview_address">
 					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-			            android:id="@+id/linear2"
 			            style="@style/settings_linearlayout">
 			            <ListView
 			                android:id="@+id/address_list_1"
@@ -140,6 +138,45 @@
 							style="@style/settings_list"/>
 			        </LinearLayout>
 			    </LinearLayout>
+		    	<View 
+			    	android:id="@+id/line3" 
+					style="@style/settings_line" 
+					android:layout_below="@+id/linearlayout_address"/>
+		    </RelativeLayout>
+		    <RelativeLayout
+		     	android:layout_width="fill_parent"
+		    	android:layout_height="fill_parent"
+	    		android:orientation="vertical"
+	    		android:id="@+id/relLayout_phone"
+	    		android:layout_below="@+id/relLayout_address">
+			    <TextView 
+			        android:id="@+id/textview_phone"
+			        android:text="@string/contact_phone"
+			        android:layout_marginLeft="5dip"
+			        style="@style/medium_TextView"/> 
+				<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+					android:id="@+id/linearlayout_contact_phone"
+				    android:layout_width="fill_parent"
+				    android:layout_height="100dip"
+				    android:orientation="horizontal"
+				    android:layout_below="@+id/textview_phone">
+					<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+			            style="@style/settings_linearlayout">
+			            <ListView
+			                android:id="@+id/contact_phone_list_1"
+							style="@style/settings_list" />
+			    	</LinearLayout>
+			    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+							style="@style/settings_linearlayout" >
+			            <ListView
+			                android:id="@+id/contact_phone_list_2"
+							style="@style/settings_list"/>
+			        </LinearLayout>
+			    </LinearLayout>
+		    	<View 
+			    	android:id="@+id/line4" 
+					style="@style/settings_line" 
+					android:layout_below="@+id/linearlayout_contact_phone"/>
 		    </RelativeLayout>
 	    </RelativeLayout>
     </ScrollView>

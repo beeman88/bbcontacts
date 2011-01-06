@@ -2,7 +2,7 @@ package com.billingboss.bbcontacts;
 
 import java.util.ArrayList;
 
-public class Email {
+public class Email extends ContractAddress {
 	private String address;
 	private String type;
 
@@ -10,6 +10,9 @@ public class Email {
 	public Email(String a, String t) {
 		this.address = a;
 		this.type = t;
+	}
+	
+	public Email() {
 	}
 
 	public String getAddress() {
@@ -25,9 +28,8 @@ public class Email {
 		this.type = t;
 	}
 
-	// class variable
 	// 1 Home, 2 Work, 3 Other, 4 Mobile	
-	static public enum emailTypes {
+	public enum emailTypes {
 		Home(1),
 		Work(2),
 		Other(3),
@@ -44,8 +46,7 @@ public class Email {
 		}		
 	}
 
-	// class method
-	static public String getNameByIndex(int index) {
+	public String getNameByIndex(int index) {
 		switch(index) {
 		case 1:
 			return emailTypes.Home.name();
@@ -60,8 +61,7 @@ public class Email {
 		}
 	}
 
-	// class method
-	static public int getIndexByName(String name) {
+	public int getIndexByName(String name) {
 
 		if (name.equals(emailTypes.Home.name())) {
 			return 1;
@@ -80,7 +80,7 @@ public class Email {
 		}
 	}
 	
-	static public ArrayList<String> typeToArrayList() {
+	public ArrayList<String> typeToArrayList() {
 		ArrayList<String> list = new ArrayList<String>() ;
 		list.add(emailTypes.Home.name());
 		list.add(emailTypes.Work.name());

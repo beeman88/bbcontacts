@@ -24,6 +24,7 @@
 	<string name="contacts">Contacts</string>	
 	<string name="contact_email">Email</string>		
 	<string name="contact_address">Address</string>	
+	<string name="contact_phone">Phone</string>	
 	<string name="selection">Selection</string>	
 	<string name="order">Order</string>	
 	<string name="settings_err_not_saved">billingboss credentials not saved in settings</string>

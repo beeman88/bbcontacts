@@ -1,6 +1,7 @@
 package com.billingboss.bbcontacts;
 
 import java.util.ArrayList;
+import com.billingboss.bbcontacts.ContractAddress;
 
 import android.app.Activity;
 import android.content.Context;
@@ -33,13 +34,10 @@ public class SettingsActivity extends Activity {
 	private static ArrayList<String> emailOrder;
 	private static ArrayList<String> emailSelection;	
 	private static ArrayList<String> addressOrder;
-	private static ArrayList<String> addressSelection;	
+	private static ArrayList<String> addressSelection;
+	private static ArrayList<String> contactPhoneOrder;
+	private static ArrayList<String> contactPhoneSelection;	
 	
-	private enum ContactAddress {
-		Email,
-		Address
-	}
-
 	public void onCreate(Bundle savedInstanceState) { 
 		super.onCreate(savedInstanceState);	
 
@@ -54,10 +52,13 @@ public class SettingsActivity extends Activity {
 				if (setBBCredentials() &&
 					setSelections(emailOrder, 
 							BBContactsDBAdapter.FIELD_EMAIL,
-							ContactAddress.Email) &&
+							new Email()) &&
 					setSelections(addressOrder, 
 							BBContactsDBAdapter.FIELD_ADDRESS,
-							ContactAddress.Address)){
+							new Address()) && 
+					setSelections(addressOrder, 
+							BBContactsDBAdapter.FIELD_PHONE,
+							new Phone())) {
 						ErrorHandler.LogToastError(ctx, TAG, 
 								getString(R.string.settings_saved));    				 
 					}
@@ -82,6 +83,12 @@ public class SettingsActivity extends Activity {
 				R.id.address_list_2,
 				addressOrder,
 				addressSelection);
+		
+		// set UI Phone lists		
+		setUISelections(R.id.contact_phone_list_1,
+				R.id.contact_phone_list_2,
+				contactPhoneOrder,
+				contactPhoneSelection);
 	}
 
 	@Override
@@ -134,25 +141,34 @@ public class SettingsActivity extends Activity {
 			emailOrder = new ArrayList<String>();
 			emailSelection = new ArrayList<String>();
 			
-			// populate email listviews
+			// populate email listviews			
 			getSelections(emailOrder, 
 					emailSelection, 
-					Email.typeToArrayList(), 
 					BBContactsDBAdapter.FIELD_EMAIL,
 					Email.emailTypes.Work.name(),
-					ContactAddress.Email);
+					new Email());
 		}
 		
 		// arraylists defined, called because of rotate
 		if (addressOrder == null && addressSelection == null) {
 			addressOrder = new ArrayList<String>();
 			addressSelection = new ArrayList<String>();
+			
 			getSelections(addressOrder,
 					addressSelection,
-					Address.typeToArrayList(),
 					BBContactsDBAdapter.FIELD_ADDRESS,
 					Address.addressTypes.Work.name(),
-					ContactAddress.Address);
+					new Address());
+		}
+		
+		if (contactPhoneOrder == null && contactPhoneSelection == null) {
+			contactPhoneOrder = new ArrayList<String>();
+			contactPhoneSelection = new ArrayList<String>();
+			getSelections(contactPhoneOrder,
+					contactPhoneSelection,
+					BBContactsDBAdapter.FIELD_PHONE,
+					Phone.phoneTypes.Work.name(),
+					new Phone());
 		}
 		
 		return;
@@ -167,7 +183,7 @@ public class SettingsActivity extends Activity {
 
 	private boolean setSelections(ArrayList<String> order, 	// backing arraylist for left side list
 			int preferenceField, 							// what kind of field, email, address, ..
-			ContactAddress className						// class
+			ContractAddress contactAddress					// abstract class
 		) {
 		// remove current selections
 		mDbHelper.deletePreferencesByField(preferenceField);
@@ -176,10 +192,10 @@ public class SettingsActivity extends Activity {
 			// use the emailOrder array list value to get the index 
 			if (mDbHelper.createPreference(
 					preferenceField,
-					getIndexByName(className, order.get(i)),
+					contactAddress.getIndexByName(order.get(i)),
 					i) < 0) {
 				ErrorHandler.LogToastError(ctx, TAG, 
-						String.format(getString(R.string.settings_err_email_not_saved), className));
+						String.format(getString(R.string.settings_err_email_not_saved), contactAddress.toString()));
 				return false;
 			}
 		}
@@ -189,15 +205,14 @@ public class SettingsActivity extends Activity {
 	// generalized method to populate list from cursor for address, email, phone, website, org type
 	private void getSelections(ArrayList<String> order, // backing arraylist for left side list 
 			ArrayList<String> selection,                // backing arraylist for right side list
-			ArrayList<String> list,						// arraylist of all choices
 			int preferenceField,						// what kind of field, email, address, ..
 			String defaultType,							// initial type if cursor empty
-			ContactAddress className					// class 
+			ContractAddress contactAddress				// abstract class 
 			) {
 		// reset the arraylists backing the listview
 		// order cleared, selection has all choices
 		order.clear();
-		resetSelectionList(selection, list);
+		resetSelectionList(selection, contactAddress.typeToArrayList());
 
 		// contact field selections, get cursor of types ordered by sequence
 		Cursor cur = mDbHelper.fetchPreferencesByField(preferenceField);
@@ -213,7 +228,7 @@ public class SettingsActivity extends Activity {
 				if (cur.moveToFirst()) {
 					do {
 						int inx = cur.getInt(cur.getColumnIndex(BBContactsDBAdapter.PREFERENCES_TYPE));
-						String typeName = getNameByIndex(className, inx);
+						String typeName = contactAddress.getNameByIndex(inx);
 						order.add(typeName);
 						selection.remove(typeName);
 					} while (cur.moveToNext());
@@ -222,28 +237,6 @@ public class SettingsActivity extends Activity {
 			finally {
 				cur.close();
 			}
-		}
-	}
-	
-	private String getNameByIndex(ContactAddress className, int inx) {
-		switch (className) {
-		case Email: 
-			return Email.getNameByIndex(inx);
-		case Address: 
-			return Address.getNameByIndex(inx);
-		default:
-			return "";
-		}
-	}
-	
-	private int getIndexByName(ContactAddress className, String name) {
-		switch (className) {
-		case Email: 
-			return Email.getIndexByName(name);
-		case Address: 
-			return Address.getIndexByName(name);
-		default:
-			return 0;
 		}
 	}
 
